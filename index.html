@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payizi Detail</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">Payizi Online</a>
+    </div>
+  </nav>
+
+  <div class="container form-container mt-3" id="orderSection">
+    <h2 class="text-center mb-3">My Payment Detail</h2>
+
+    <!-- Tabs navigation -->
+    <ul class="nav nav-tabs justify-content-center mb-3" id="methodTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="cash-tab" data-bs-toggle="tab" href="#cash" role="tab" aria-controls="cash" aria-selected="true">Cash Pickup</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" id="bank-tab" data-bs-toggle="tab" href="#bank" role="tab" aria-controls="bank" aria-selected="false">Bank Transfer</a>
+      </li>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link" id="mobile-tab" data-bs-toggle="tab" href="#mobile" role="tab" aria-controls="mobile" aria-selected="false">Mobile Money Transfer</a>
+      </li>
+    </ul>
+
+    <div class="tab-content card shadow-sm" id="methodTabsContent">
+      <!-- Cash Pickup -->
+      <div class="tab-pane fade show active" id="cash" role="tabpanel" aria-labelledby="cash-tab">
+        <form id="formCash" novalidate class="form-content p-3">
+          <div class="mb-3">
+            <label for="usdCash" class="form-label">USD Required (multiples of 10)</label>
+            <input type="number" id="usdCash" class="form-control" min="10" step="10" required>
+            <ul class="calc-result list-unstyled mt-2">
+              <li>Live Rate: <span id="rateCash">--</span></li>
+              <li>Effective Rate: <span id="effCash">--</span></li>
+              <li>ZAR: <span id="zarCash">0.00</span></li>
+            </ul>
+          </div>
+          <div class="mb-3">
+            <h5>Beneficiary (Zimbabwe)</h5>
+            <input type="text" id="beneficiaryFullNameCash" class="form-control mb-2" placeholder="Full Name" required>
+            <input type="tel" id="beneficiaryMobileCash" class="form-control mb-2" placeholder="+263771234567" pattern="\+263\d{9}" required>
+            <input type="text" id="beneficiaryGovtIdCash" class="form-control mb-2" placeholder="Government ID" required>
+            <input type="text" id="pickupLocationCash" class="form-control" placeholder="Pickup Location" required>
+          </div>
+          <div class="mb-3">
+            <h5>Sender (South Africa)</h5>
+            <input type="text" id="senderFullNameCash" class="form-control mb-2" placeholder="Full Name" required>
+            <input type="email" id="senderEmailCash" class="form-control mb-2" placeholder="Email Address" required>
+            <input type="tel" id="senderMobileCash" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Submit Order</button>
+        </form>
+      </div>
+
+      <!-- Bank Transfer -->
+      <div class="tab-pane fade" id="bank" role="tabpanel" aria-labelledby="bank-tab">
+        <form id="formBank" novalidate class="form-content p-3">
+          <div class="mb-3">
+            <label for="usdBank" class="form-label">USD Required (multiples of 10)</label>
+            <input type="number" id="usdBank" class="form-control" min="10" step="10" required>
+            <ul class="calc-result list-unstyled mt-2">
+              <li>Live Rate: <span id="rateBank">--</span></li>
+              <li>Effective Rate: <span id="effBank">--</span></li>
+              <li>ZAR: <span id="zarBank">0.00</span></li>
+            </ul>
+          </div>
+          <div class="mb-3">
+            <h5>Beneficiary Bank (Zimbabwe)</h5>
+            <input type="text" id="bankName" class="form-control mb-2" placeholder="Bank Name" required>
+            <input type="text" id="accountNumber" class="form-control mb-2" placeholder="Account Number" required>
+            <input type="text" id="accountHolderName" class="form-control mb-2" placeholder="Account Holder Name" required>
+            <input type="text" id="branchCode" class="form-control" placeholder="Branch Code" required>
+          </div>
+          <div class="mb-3">
+            <h5>Sender (South Africa)</h5>
+            <input type="text" id="senderFullNameBank" class="form-control mb-2" placeholder="Full Name" required>
+            <input type="email" id="senderEmailBank" class="form-control mb-2" placeholder="Email Address" required>
+            <input type="tel" id="senderMobileBank" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Submit Order</button>
+        </form>
+      </div>
+
+      <!-- Mobile Money -->
+      <div class="tab-pane fade" id="mobile" role="tabpanel" aria-labelledby="mobile-tab">
+        <form id="formMobile" novalidate class="form-content p-3">
+          <div class="mb-3">
+            <label for="usdMobile" class="form-label">USD Required (multiples of 10)</label>
+            <input type="number" id="usdMobile" class="form-control" min="10" step="10" required>
+            <label for="walletMobile" class="form-label mt-2">Mobile Money Wallet</label>
+            <select id="walletMobile" name="wallet" class="form-select" required>
+              <option value="">Select Wallet</option>
+              <option value="EcoCash">EcoCash</option>
+              <option value="InnBucks">InnBucks</option>
+            </select>
+            <ul class="calc-result list-unstyled mt-2">
+              <li>Live Rate: <span id="rateMobile">--</span></li>
+              <li>Effective Rate: <span id="effMobile">--</span></li>
+              <li>ZAR: <span id="zarMobile">0.00</span></li>
+            </ul>
+          </div>
+          <div class="mb-3">
+            <h5>Beneficiary (Zimbabwe)</h5>
+            <input type="text" id="beneficiaryNameMobile" class="form-control mb-2" placeholder="Full Name" required>
+            <input type="tel" id="beneficiaryMobileMobile" class="form-control mb-2" placeholder="+263771234567" pattern="\+263\d{9}" required>
+            <input type="text" id="beneficiaryGovtIdMobile" class="form-control" placeholder="Government ID" required>
+          </div>
+          <div class="mb-3">
+            <h5>Sender (South Africa)</h5>
+            <input type="text" id="senderFullNameMobile" class="form-control mb-2" placeholder="Full Name" required>
+            <input type="email" id="senderEmailMobile" class="form-control mb-2" placeholder="Email Address" required>
+            <input type="tel" id="senderMobileMobile" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Submit Order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="scripts.js" defer></script>
+</body>
+</html>
