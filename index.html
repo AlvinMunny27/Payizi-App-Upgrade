@@ -3,23 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payizi Detail</title>
-  <!-- Bootstrap CSS -->
+  <title>Payizi</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Custom CSS -->
-  <link href="styles.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link href="styles.css?v=1.5" rel="stylesheet">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <nav class="navbar navbar-expand-lg shadow-sm">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="#">Payizi Online</a>
+      <a class="navbar-brand fw-bold" href="#">
+        <img src="/Assets/High Resolution/black/full/white_logo_transparent_background.png" alt="Payizi Logo" class="logo">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#home">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#rates">Calculator</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#orders">Orders</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#support">Support</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Login / Register
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
+              <li><a class="dropdown-item" href="#login">Login</a></li>
+              <li><a class="dropdown-item" href="#register">Register</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   </nav>
 
-  <div class="container form-container mt-3" id="orderSection">
-    <h2 class="text-center mb-3">My Payment Detail</h2>
+  <div class="container form-container" id="orderSection">
+   
+    <h2 class="text-center mb-3">Enter Your Payment Detail</h2>
+    <div id="rateDisplay" class="text-center mb-3"></div>
 
-    <!-- Tabs navigation -->
     <ul class="nav nav-tabs justify-content-center mb-3" id="methodTabs" role="tablist">
       <li class="nav-item" role="presentation">
         <a class="nav-link active" id="cash-tab" data-bs-toggle="tab" href="#cash" role="tab" aria-controls="cash" aria-selected="true">Cash Pickup</a>
@@ -28,7 +58,7 @@
         <a class="nav-link" id="bank-tab" data-bs-toggle="tab" href="#bank" role="tab" aria-controls="bank" aria-selected="false">Bank Transfer</a>
       </li>
       <li class="nav-item" role="presentation">
-        <a class="nav-link" id="mobile-tab" data-bs-toggle="tab" href="#mobile" role="tab" aria-controls="mobile" aria-selected="false">Mobile Money Transfer</a>
+        <a class="nav-link" id="mobile-tab" data-bs-toggle="tab" href="#mobile" role="tab" aria-controls="mobile" aria-selected="false">Mobile Money</a>
       </li>
     </ul>
 
@@ -38,8 +68,8 @@
         <form id="formCash" novalidate class="form-content p-3">
           <div class="mb-3">
             <label for="usdCash" class="form-label">USD Required</label>
-            <input type="number" id="usdCash" class="form-control" min="10" step="10" required>
-            <div class="invalid-feedback">Enter a USD amount >0 and multiple of 10</div>
+            <input type="number" id="usdCash" class="form-control" min="5" step="5" required>
+            <div class="invalid-feedback">Invalid amount: must be >0 and multiple of 5</div>
             <ul class="calc-result list-unstyled mt-2">
               <li>Live Rate: <span id="rateCash">--</span></li>
               <li>Effective Rate: <span id="effCash">--</span></li>
@@ -49,22 +79,22 @@
           <div class="mb-3">
             <h5>Beneficiary</h5>
             <input type="text" id="beneficiaryFullNameCash" class="form-control mb-2" placeholder="Full Name" required>
-            <div class="invalid-feedback">Please enter a full name</div>
-            <input type="tel" id="beneficiaryMobileCash" class="form-control mb-2" placeholder="+263771234567" pattern="\+263\d{9}" required>
-            <div class="invalid-feedback">Please enter a valid mobile number</div>
+            <div class="invalid-feedback">Name required</div>
+            <input type="tel" id="beneficiaryMobileCash" class="form-control mb-2" placeholder="+263771234567" required>
+            <div class="invalid-feedback">Invalid ZW number</div>
             <input type="text" id="beneficiaryGovtIdCash" class="form-control mb-2" placeholder="Government ID" required>
-            <div class="invalid-feedback">Please enter a government ID</div>
+            <div class="invalid-feedback">ID required</div>
             <input type="text" id="pickupLocationCash" class="form-control" placeholder="Pickup Location" required>
-            <div class="invalid-feedback">Please enter a pickup location</div>
+            <div class="invalid-feedback">Location required</div>
           </div>
           <div class="mb-3">
             <h5>Sender</h5>
             <input type="text" id="senderFullNameCash" class="form-control mb-2" placeholder="Full Name" required>
-            <div class="invalid-feedback">Please enter a full name</div>
+            <div class="invalid-feedback">Name required</div>
             <input type="email" id="senderEmailCash" class="form-control mb-2" placeholder="Email Address" required>
-            <div class="invalid-feedback">Please enter a valid email</div>
-            <input type="tel" id="senderMobileCash" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
-            <div class="invalid-feedback">Please enter a valid mobile number</div>
+            <div class="invalid-feedback">Invalid email</div>
+            <input type="tel" id="senderMobileCash" class="form-control" placeholder="+27712345678" required>
+            <div class="invalid-feedback">Invalid SA number</div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Submit Order</button>
         </form>
@@ -75,8 +105,16 @@
         <form id="formBank" novalidate class="form-content p-3">
           <div class="mb-3">
             <label for="usdBank" class="form-label">USD Required</label>
-            <input type="number" id="usdBank" class="form-control" min="10" step="10" required>
-            <div class="invalid-feedback">Enter a USD amount >0 and multiple of 10</div>
+            <input type="number" id="usdBank" class="form-control" min="5" step="5" required>
+            <div class="invalid-feedback">Invalid amount: must be >0 and multiple of 5</div>
+            <label for="bankSelect" class="form-label mt-2">Bank</label>
+            <select id="bankSelect" name="bank" class="form-select" required>
+              <option value="">Select Bank</option>
+              <option value="CBZ">CBZ</option>
+              <option value="STANBIC">STANBIC</option>
+              <option value="ZB">ZB</option>
+            </select>
+            <div class="invalid-feedback">Bank required</div>
             <ul class="calc-result list-unstyled mt-2">
               <li>Live Rate: <span id="rateBank">--</span></li>
               <li>Effective Rate: <span id="effBank">--</span></li>
@@ -86,22 +124,22 @@
           <div class="mb-3">
             <h5>Beneficiary Bank</h5>
             <input type="text" id="bankName" class="form-control mb-2" placeholder="Bank Name" required>
-            <div class="invalid-feedback">Please enter a bank name</div>
+            <div class="invalid-feedback">Bank name required</div>
             <input type="text" id="accountNumber" class="form-control mb-2" placeholder="Account Number" required>
-            <div class="invalid-feedback">Please enter an account number</div>
+            <div class="invalid-feedback">Account number required</div>
             <input type="text" id="accountHolderName" class="form-control mb-2" placeholder="Account Holder Name" required>
-            <div class="invalid-feedback">Please enter an account holder name</div>
+            <div class="invalid-feedback">Holder name required</div>
             <input type="text" id="branchCode" class="form-control" placeholder="Branch Code" required>
-            <div class="invalid-feedback">Please enter a branch code</div>
+            <div class="invalid-feedback">Branch code required</div>
           </div>
           <div class="mb-3">
             <h5>Sender</h5>
             <input type="text" id="senderFullNameBank" class="form-control mb-2" placeholder="Full Name" required>
-            <div class="invalid-feedback">Please enter a full name</div>
+            <div class="invalid-feedback">Name required</div>
             <input type="email" id="senderEmailBank" class="form-control mb-2" placeholder="Email Address" required>
-            <div class="invalid-feedback">Please enter a valid email</div>
-            <input type="tel" id="senderMobileBank" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
-            <div class="invalid-feedback">Please enter a valid mobile number</div>
+            <div class="invalid-feedback">Invalid email</div>
+            <input type="tel" id="senderMobileBank" class="form-control" placeholder="+27712345678" required>
+            <div class="invalid-feedback">Invalid SA number</div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Submit Order</button>
         </form>
@@ -112,15 +150,15 @@
         <form id="formMobile" novalidate class="form-content p-3">
           <div class="mb-3">
             <label for="usdMobile" class="form-label">USD Required</label>
-            <input type="number" id="usdMobile" class="form-control" min="10" step="10" required>
-            <div class="invalid-feedback">Enter a USD amount >0 and multiple of 10</div>
+            <input type="number" id="usdMobile" class="form-control" min="5" step="5" required>
+            <div class="invalid-feedback">Invalid amount: must be >0 and multiple of 5</div>
             <label for="walletMobile" class="form-label mt-2">Mobile Money Wallet</label>
             <select id="walletMobile" name="wallet" class="form-select" required>
               <option value="">Select Wallet</option>
               <option value="EcoCash">EcoCash</option>
               <option value="InnBucks">InnBucks</option>
             </select>
-            <div class="invalid-feedback">Please select a mobile money wallet</div>
+            <div class="invalid-feedback">Wallet required</div>
             <ul class="calc-result list-unstyled mt-2">
               <li>Live Rate: <span id="rateMobile">--</span></li>
               <li>Effective Rate: <span id="effMobile">--</span></li>
@@ -130,20 +168,20 @@
           <div class="mb-3">
             <h5>Beneficiary</h5>
             <input type="text" id="beneficiaryNameMobile" class="form-control mb-2" placeholder="Full Name" required>
-            <div class="invalid-feedback">Please enter a full name</div>
-            <input type="tel" id="beneficiaryMobileMobile" class="form-control mb-2" placeholder="+263771234567" pattern="\+263\d{9}" required>
-            <div class="invalid-feedback">Please enter a valid mobile number</div>
+            <div class="invalid-feedback">Name required</div>
+            <input type="tel" id="beneficiaryMobileMobile" class="form-control mb-2" placeholder="+263771234567" required>
+            <div class="invalid-feedback">Invalid ZW number</div>
             <input type="text" id="beneficiaryGovtIdMobile" class="form-control" placeholder="Government ID" required>
-            <div class="invalid-feedback">Please enter a government ID</div>
+            <div class="invalid-feedback">ID required</div>
           </div>
           <div class="mb-3">
             <h5>Sender</h5>
             <input type="text" id="senderFullNameMobile" class="form-control mb-2" placeholder="Full Name" required>
-            <div class="invalid-feedback">Please enter a full name</div>
+            <div class="invalid-feedback">Name required</div>
             <input type="email" id="senderEmailMobile" class="form-control mb-2" placeholder="Email Address" required>
-            <div class="invalid-feedback">Please enter a valid email</div>
-            <input type="tel" id="senderMobileMobile" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
-            <div class="invalid-feedback">Please enter a valid mobile number</div>
+            <div class="invalid-feedback">Invalid email</div>
+            <input type="text" id="senderMobileMobile" class="form-control" placeholder="+27712345678" required>
+            <div class="invalid-feedback">Invalid SA number</div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Submit Order</button>
         </form>
@@ -151,7 +189,6 @@
     </div>
   </div>
 
-  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="scripts.js" defer></script>
 </body>
