@@ -37,8 +37,9 @@
       <div class="tab-pane fade show active" id="cash" role="tabpanel" aria-labelledby="cash-tab">
         <form id="formCash" novalidate class="form-content p-3">
           <div class="mb-3">
-            <label for="usdCash" class="form-label">USD Required (multiples of 10)</label>
+            <label for="usdCash" class="form-label">USD Required</label>
             <input type="number" id="usdCash" class="form-control" min="10" step="10" required>
+            <div class="invalid-feedback">Enter a USD amount >0 and multiple of 10</div>
             <ul class="calc-result list-unstyled mt-2">
               <li>Live Rate: <span id="rateCash">--</span></li>
               <li>Effective Rate: <span id="effCash">--</span></li>
@@ -46,17 +47,24 @@
             </ul>
           </div>
           <div class="mb-3">
-            <h5>Beneficiary (Zimbabwe)</h5>
+            <h5>Beneficiary</h5>
             <input type="text" id="beneficiaryFullNameCash" class="form-control mb-2" placeholder="Full Name" required>
+            <div class="invalid-feedback">Please enter a full name</div>
             <input type="tel" id="beneficiaryMobileCash" class="form-control mb-2" placeholder="+263771234567" pattern="\+263\d{9}" required>
+            <div class="invalid-feedback">Please enter a valid mobile number</div>
             <input type="text" id="beneficiaryGovtIdCash" class="form-control mb-2" placeholder="Government ID" required>
+            <div class="invalid-feedback">Please enter a government ID</div>
             <input type="text" id="pickupLocationCash" class="form-control" placeholder="Pickup Location" required>
+            <div class="invalid-feedback">Please enter a pickup location</div>
           </div>
           <div class="mb-3">
-            <h5>Sender (South Africa)</h5>
+            <h5>Sender</h5>
             <input type="text" id="senderFullNameCash" class="form-control mb-2" placeholder="Full Name" required>
+            <div class="invalid-feedback">Please enter a full name</div>
             <input type="email" id="senderEmailCash" class="form-control mb-2" placeholder="Email Address" required>
+            <div class="invalid-feedback">Please enter a valid email</div>
             <input type="tel" id="senderMobileCash" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
+            <div class="invalid-feedback">Please enter a valid mobile number</div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Submit Order</button>
         </form>
@@ -66,8 +74,9 @@
       <div class="tab-pane fade" id="bank" role="tabpanel" aria-labelledby="bank-tab">
         <form id="formBank" novalidate class="form-content p-3">
           <div class="mb-3">
-            <label for="usdBank" class="form-label">USD Required (multiples of 10)</label>
+            <label for="usdBank" class="form-label">USD Required</label>
             <input type="number" id="usdBank" class="form-control" min="10" step="10" required>
+            <div class="invalid-feedback">Enter a USD amount >0 and multiple of 10</div>
             <ul class="calc-result list-unstyled mt-2">
               <li>Live Rate: <span id="rateBank">--</span></li>
               <li>Effective Rate: <span id="effBank">--</span></li>
@@ -75,17 +84,24 @@
             </ul>
           </div>
           <div class="mb-3">
-            <h5>Beneficiary Bank (Zimbabwe)</h5>
+            <h5>Beneficiary Bank</h5>
             <input type="text" id="bankName" class="form-control mb-2" placeholder="Bank Name" required>
+            <div class="invalid-feedback">Please enter a bank name</div>
             <input type="text" id="accountNumber" class="form-control mb-2" placeholder="Account Number" required>
+            <div class="invalid-feedback">Please enter an account number</div>
             <input type="text" id="accountHolderName" class="form-control mb-2" placeholder="Account Holder Name" required>
+            <div class="invalid-feedback">Please enter an account holder name</div>
             <input type="text" id="branchCode" class="form-control" placeholder="Branch Code" required>
+            <div class="invalid-feedback">Please enter a branch code</div>
           </div>
           <div class="mb-3">
-            <h5>Sender (South Africa)</h5>
+            <h5>Sender</h5>
             <input type="text" id="senderFullNameBank" class="form-control mb-2" placeholder="Full Name" required>
+            <div class="invalid-feedback">Please enter a full name</div>
             <input type="email" id="senderEmailBank" class="form-control mb-2" placeholder="Email Address" required>
+            <div class="invalid-feedback">Please enter a valid email</div>
             <input type="tel" id="senderMobileBank" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
+            <div class="invalid-feedback">Please enter a valid mobile number</div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Submit Order</button>
         </form>
@@ -95,14 +111,16 @@
       <div class="tab-pane fade" id="mobile" role="tabpanel" aria-labelledby="mobile-tab">
         <form id="formMobile" novalidate class="form-content p-3">
           <div class="mb-3">
-            <label for="usdMobile" class="form-label">USD Required (multiples of 10)</label>
+            <label for="usdMobile" class="form-label">USD Required</label>
             <input type="number" id="usdMobile" class="form-control" min="10" step="10" required>
+            <div class="invalid-feedback">Enter a USD amount >0 and multiple of 10</div>
             <label for="walletMobile" class="form-label mt-2">Mobile Money Wallet</label>
             <select id="walletMobile" name="wallet" class="form-select" required>
               <option value="">Select Wallet</option>
               <option value="EcoCash">EcoCash</option>
               <option value="InnBucks">InnBucks</option>
             </select>
+            <div class="invalid-feedback">Please select a mobile money wallet</div>
             <ul class="calc-result list-unstyled mt-2">
               <li>Live Rate: <span id="rateMobile">--</span></li>
               <li>Effective Rate: <span id="effMobile">--</span></li>
@@ -110,16 +128,22 @@
             </ul>
           </div>
           <div class="mb-3">
-            <h5>Beneficiary (Zimbabwe)</h5>
+            <h5>Beneficiary</h5>
             <input type="text" id="beneficiaryNameMobile" class="form-control mb-2" placeholder="Full Name" required>
+            <div class="invalid-feedback">Please enter a full name</div>
             <input type="tel" id="beneficiaryMobileMobile" class="form-control mb-2" placeholder="+263771234567" pattern="\+263\d{9}" required>
+            <div class="invalid-feedback">Please enter a valid mobile number</div>
             <input type="text" id="beneficiaryGovtIdMobile" class="form-control" placeholder="Government ID" required>
+            <div class="invalid-feedback">Please enter a government ID</div>
           </div>
           <div class="mb-3">
-            <h5>Sender (South Africa)</h5>
+            <h5>Sender</h5>
             <input type="text" id="senderFullNameMobile" class="form-control mb-2" placeholder="Full Name" required>
+            <div class="invalid-feedback">Please enter a full name</div>
             <input type="email" id="senderEmailMobile" class="form-control mb-2" placeholder="Email Address" required>
+            <div class="invalid-feedback">Please enter a valid email</div>
             <input type="tel" id="senderMobileMobile" class="form-control" placeholder="+27821234567" pattern="\+27\d{9}" required>
+            <div class="invalid-feedback">Please enter a valid mobile number</div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Submit Order</button>
         </form>

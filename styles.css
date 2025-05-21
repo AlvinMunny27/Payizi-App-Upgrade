@@ -40,6 +40,7 @@ body {
   max-height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
+  margin: auto;
 }
 
 h2 {
@@ -114,7 +115,7 @@ h2 {
   margin-bottom: 0.4rem;
 }
 
-.form-control {
+.form-control, .form-select {
   background: #2a2a2a;
   border: 1px solid #555;
   color: #e0e0e0;
@@ -122,18 +123,23 @@ h2 {
   padding: 0.6rem;
   font-size: 0.9rem;
   transition: all 0.3s ease;
+  margin-bottom: 0.5rem;
 }
 
-.form-control::placeholder {
+.form-control::placeholder, .form-select::placeholder {
   color: #888;
 }
 
-.form-control:focus {
+.form-control:focus, .form-select:focus {
   border-color: #6b6b6b;
   box-shadow: 0 0 8px rgba(107, 107, 107, 0.3);
   background: #333;
   color: #ffffff;
   outline: none;
+}
+
+.was-validated .form-control:invalid, .was-validated .form-select:invalid {
+  border-color: #dc3545;
 }
 
 .calc-result {
@@ -150,6 +156,13 @@ h2 {
 .calc-result span {
   color: #ffffff;
   font-weight: 600;
+  display: inline-block;
+  min-width: 50px;
+}
+
+.calc-result.loading span {
+  color: #888;
+  font-style: italic;
 }
 
 h5 {
@@ -180,6 +193,11 @@ h5 {
   transform: scale(0.97);
 }
 
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.8rem;
+}
+
 @media (max-width: 576px) {
   body {
     padding: 0.5rem;
@@ -187,12 +205,13 @@ h5 {
   .form-container {
     max-width: 100%;
     max-height: calc(100vh - 100px);
+    padding: 0 15px;
   }
   .nav-tabs .nav-link {
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
   }
-  .form-control {
+  .form-control, .form-select {
     padding: 0.5rem;
     font-size: 0.85rem;
   }
