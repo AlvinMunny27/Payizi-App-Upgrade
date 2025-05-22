@@ -6,13 +6,14 @@
   <title>Payizi</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <link href="styles.css?v=1.5" rel="stylesheet">
+  <link href="styles.css?v=1.6" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/white_icon_transparent_background.png">
 </head>
 <body>
   <nav class="navbar navbar-expand-lg shadow-sm">
     <div class="container">
       <a class="navbar-brand fw-bold" href="#">
-        <img src="/Assets/High Resolution/black/full/white_logo_transparent_background.png" alt="Payizi Logo" class="logo">
+        <img src="/white_logo_transparent_background.png" alt="Payizi Logo" class="logo">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -23,17 +24,11 @@
             <a class="nav-link" href="#home">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#rates">Calculator</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#orders">Orders</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link" href="#support">Support</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Login / Register
+              Account
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
               <li><a class="dropdown-item" href="#login">Login</a></li>
@@ -46,7 +41,6 @@
   </nav>
 
   <div class="container form-container" id="orderSection">
-   
     <h2 class="text-center mb-3">Enter Your Payment Detail</h2>
     <div id="rateDisplay" class="text-center mb-3"></div>
 
@@ -180,7 +174,7 @@
             <div class="invalid-feedback">Name required</div>
             <input type="email" id="senderEmailMobile" class="form-control mb-2" placeholder="Email Address" required>
             <div class="invalid-feedback">Invalid email</div>
-            <input type="text" id="senderMobileMobile" class="form-control" placeholder="+27712345678" required>
+            <input type="tel" id="senderMobileMobile" class="form-control" placeholder="+27712345678" required>
             <div class="invalid-feedback">Invalid SA number</div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Submit Order</button>

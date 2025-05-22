@@ -17,7 +17,7 @@ body {
 }
 
 .navbar {
-  background: #080808 !important;
+  background: #444444 !important;
   border-bottom: 1px solid #cccccc;
   position: fixed !important;
   top: 0;
@@ -32,7 +32,7 @@ body {
   color: #ffffff !important;
   font-family: 'Audiowide', sans-serif !important; /* Audiowide for title only */
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 500;
   display: flex;
   align-items: center;
   transition: color 0.3s ease;
@@ -43,7 +43,7 @@ body {
 }
 
 .navbar-brand img.logo {
-  height: 60px; /* Balanced size for visibility */
+  height: 40px; /* Balanced size for visibility */
   margin-right: 10px;
   max-width: 100%;
 }
@@ -240,7 +240,7 @@ h2 {
 }
 
 #rateDisplay {
-  color: #00ff00 !important;
+  color: #1100ff !important;
   font-weight: 500;
   font-size: 1rem;
   letter-spacing: 0.5px;
