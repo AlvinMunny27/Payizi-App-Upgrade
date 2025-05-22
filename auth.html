@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payizi - Home</title>
+  <title>Payizi - Sign In / Register</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link href="styles.css?v=1.7" rel="stylesheet">
@@ -22,13 +22,13 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link active" href="index.html">Home</a>
+            <a class="nav-link" href="index.html">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#support">Support</a>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle active" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Account
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
@@ -42,28 +42,33 @@
   </nav>
 
   <div class="container form-container">
-    <h2 class="text-center mb-4">Welcome to Payizi</h2>
-    <div class="card shadow-sm p-4 mb-4">
-      <h3 class="text-center mb-3">Currency Calculator</h3>
-      <div id="rateDisplay" class="text-center mb-3"></div>
-      <form id="calcForm" class="p-3">
+    <h2 class="text-center mb-4" id="authTitle">Sign In</h2>
+    <div class="card shadow-sm p-4">
+      <form id="authForm" novalidate class="p-3">
         <div class="mb-3">
-          <label for="calcUsd" class="form-label">Enter USD Amount</label>
-          <input type="number" id="calcUsd" class="form-control" min="5" step="5" required>
-          <div class="invalid-feedback">Invalid amount: must be >0 and multiple of 5</div>
-          <ul class="calc-result list-unstyled mt-2">
-            <li>Live Rate: <span id="calcRate">--</span></li>
-            <li>ZAR: <span id="calcZar">0.00</span></li>
-          </ul>
+          <label for="email" class="form-label">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="Email Address" required>
+          <div class="invalid-feedback">Invalid email</div>
         </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Password" required>
+          <div class="invalid-feedback">Password required</div>
+        </div>
+        <div class="mb-3 register-field d-none">
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
+          <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password">
+          <div class="invalid-feedback">Passwords do not match</div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Submit</button>
       </form>
-    </div>
-    <div class="text-center">
-      <a href="auth.html?mode=login&redirect=order.html" class="btn btn-primary w-100 w-md-50">Create an Order</a>
+      <div class="text-center mt-3">
+        <a href="#" id="toggleAuthMode" class="text-muted">Don't have an account? Register</a>
+      </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="home.js" defer></script>
+  <script src="auth.js" defer></script>
 </body>
 </html>
