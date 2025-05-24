@@ -1,19 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
   console.log('home.js loaded');
 
-  // Rate constants
   let LIVE_RATE = 18.5;
   const RATE_REFRESH_INTERVAL = 5 * 60 * 1000;
   let lastRateFetch = 0;
 
-  // Elements
   const calcForm = document.getElementById('calcForm');
   const calcUsd = document.getElementById('calcUsd');
   const calcRate = document.getElementById('calcRate');
   const calcZar = document.getElementById('calcZar');
   const rateDisplay = document.getElementById('rateDisplay');
 
-  // Debounce utility
   const debounce = (func, wait) => {
     let timeout;
     return (...args) => {
@@ -22,8 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
-  // Update calculator
-  const updateCalc = (usdInput, rateSpan, zarSpan, isLoading = false) => {
+  const updateCost = (usdInput, rateSpan, zarSpan, isLoading = false) => {
     if (isLoading) {
       rateSpan.textContent = 'Loading...';
       zarSpan.textContent = 'Loading...';
@@ -37,15 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
     zarSpan.textContent = zar.toFixed(2);
   };
 
-  // Fetch live rate
   const fetchRate = async () => {
     const now = Date.now();
     if (now - lastRateFetch < RATE_REFRESH_INTERVAL) {
       console.log('Using cached rate:', LIVE_RATE);
       return LIVE_RATE;
     }
-    updateCalc(calcUsd, calcRate, calcZar, true);
-    rateDisplay.classList.add('loading');
+    updateCost(calcUsd, calcRate, calcZar, true);
+    if (rateDisplay) rateDisplay.classList.add('loading');
     try {
       const response = await fetch('https://open.er-api.com/v6/latest/USD');
       if (!response.ok) throw new Error('API request failed');
@@ -56,17 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.warn(`Failed to fetch live rate, using fallback: ${LIVE_RATE}`, error);
     } finally {
-      rateDisplay.classList.remove('loading');
+      if (rateDisplay) rateDisplay.classList.remove('loading');
     }
     return LIVE_RATE;
   };
 
-  // Update exchange rate display
   const updateRateDisplay = () => {
-    rateDisplay.textContent = `Current Rate: 1 USD = ${LIVE_RATE.toFixed(4)} ZAR`;
+    if (rateDisplay) {
+      rateDisplay.textContent = `Current Rate: 1 USD = ${LIVE_RATE.toFixed(4)} ZAR`;
+    }
   };
 
-  // Validate amount
   const validateAmount = (input) => {
     const value = parseFloat(input.value);
     if (isNaN(value) || value <= 0 || !Number.isInteger(value) || value % 5 !== 0) {
@@ -80,23 +75,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Initialize calculator
   calcUsd.addEventListener('input', debounce(() => {
     validateAmount(calcUsd);
-    updateCalc(calcUsd, calcRate, calcZar);
+    updateCost(calcUsd, calcRate, calcZar);
   }, 300));
 
   calcForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    calcForm.classList.add('was-validated');
     if (validateAmount(calcUsd)) {
-      updateCalc(calcUsd, calcRate, calcZar);
+      calcForm.classList.remove('was-validated');
     }
   });
 
-  // Fetch rate and initialize
   fetchRate().then(() => {
     updateRateDisplay();
-    updateCalc(calcUsd, calcRate, calcZar);
+    updateCost(calcUsd, calcRate, calcZar);
     setInterval(() => fetchRate().then(updateRateDisplay), RATE_REFRESH_INTERVAL);
   });
+});
+const usdInput = document.getElementById('usdInput'); // Replace with your actual ID
+const zarOutput = document.getElementById('zarOutput'); // Replace with your actual ID
+usdInput.addEventListener('input', function() {
+  const usdValue = parseFloat(usdInput.value) || 0;
+  const rate = 17.8533; // Update with your live rate
+  zarOutput.textContent = `ZAR: ${(usdValue * rate).toFixed(2)}`;
 });

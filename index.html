@@ -6,14 +6,17 @@
   <title>Payizi - Home</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <link href="styles.css?v=1.7" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link href="styles.css?v=2.3" rel="stylesheet">
   <link rel="icon" type="image/png" href="/black_icon_transparent_background.png">
 </head>
 <body>
+  <!-- Add a clickable area for the logo -->
+  <a href="index.html" class="logo-link" aria-label="Payizi Home"></a>
+
   <nav class="navbar navbar-expand-lg shadow-sm">
     <div class="container">
       <a class="navbar-brand fw-bold" href="index.html">
-        <img src="/white_logo_transparent_background.png" alt="Payizi Logo" class="logo">
         Payizi Online
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,24 +27,30 @@
           <li class="nav-item">
             <a class="nav-link active" href="index.html">Home</a>
           </li>
+           <li class="nav-item">
+            <a class="nav-link" href="#order.html">Create Order</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="#support">Support</a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Account
+          <li class="nav-item" id="accountDropdown" style="display: block;">
+            <a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-popper="none">
+              <i class="fas fa-user"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
               <li><a class="dropdown-item" href="auth.html?mode=login">Login</a></li>
               <li><a class="dropdown-item" href="auth.html?mode=register">Register</a></li>
             </ul>
           </li>
+          <li class="nav-item" id="logoutLink" style="display: none;">
+            <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <div class="container form-container">
+  <div class="form-container">
     <h2 class="text-center mb-4">Welcome to Payizi</h2>
     <div class="card shadow-sm p-4 mb-4">
       <h3 class="text-center mb-3">Currency Calculator</h3>
@@ -65,5 +74,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="home.js" defer></script>
+  <script src="navbar.js" defer></script>
 </body>
 </html>

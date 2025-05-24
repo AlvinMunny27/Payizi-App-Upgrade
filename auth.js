@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('auth.js loaded');
+  console.log('auth.js loaded at', new Date().toISOString());
 
-  // Elements
   const authForm = document.getElementById('authForm');
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
@@ -10,12 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleAuthMode = document.getElementById('toggleAuthMode');
   const registerField = document.querySelector('.register-field');
 
-  // Get mode from URL
   const urlParams = new URLSearchParams(window.location.search);
   let mode = urlParams.get('mode') || 'login';
-  const redirect = urlParams.get('redirect') || 'index.html';
+  const redirect = urlParams.get('redirect') || 'order.html';
+  console.log('Mode:', mode, 'Redirect:', redirect);
 
-  // Set initial mode
   if (mode === 'register') {
     authTitle.textContent = 'Register';
     toggleAuthMode.textContent = 'Already have an account? Sign In';
@@ -26,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     registerField.classList.add('d-none');
   }
 
-  // Toggle mode
   toggleAuthMode.addEventListener('click', (e) => {
     e.preventDefault();
     mode = mode === 'login' ? 'register' : 'login';
@@ -41,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleAuthMode.textContent = "Don't have an account? Register";
       registerField.classList.add('d-none');
     }
+    console.log('Toggled mode to:', mode);
   });
 
-  // Validate email
   const validateEmail = (input) => {
     if (!input.value || !/\S+@\S+\.\S+/.test(input.value)) {
       input.classList.add('is-invalid');
@@ -56,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Validate password
   const validatePassword = (input) => {
     if (!input.value) {
       input.classList.add('is-invalid');
@@ -69,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Validate confirm password
   const validateConfirmPassword = (password, confirm) => {
     if (confirm.value !== password.value) {
       confirm.classList.add('is-invalid');
@@ -82,16 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Real-time validation
   emailInput.addEventListener('input', () => validateEmail(emailInput));
   passwordInput.addEventListener('input', () => validatePassword(passwordInput));
   confirmPasswordInput.addEventListener('input', () => {
     if (mode === 'register') validateConfirmPassword(passwordInput, confirmPasswordInput);
   });
 
-  // Form submission
   authForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    console.log('Form submitted, mode:', mode);
     authForm.classList.add('was-validated');
     let isValid = true;
     isValid = validateEmail(emailInput) && isValid;
@@ -99,13 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mode === 'register') {
       isValid = validateConfirmPassword(passwordInput, confirmPasswordInput) && isValid;
     }
+    console.log('Form validation result:', isValid);
     if (isValid) {
       console.log(`${mode === 'register' ? 'Register' : 'Login'} submitted:`, {
         email: emailInput.value,
         password: passwordInput.value,
       });
-      // Simulate successful authentication and redirect
+      localStorage.setItem('isLoggedIn', 'true');
+      console.log('isLoggedIn set to true, redirecting to:', redirect);
       window.location.href = redirect;
+    } else {
+      console.log('Validation failed, please check form inputs.');
     }
   });
 });
