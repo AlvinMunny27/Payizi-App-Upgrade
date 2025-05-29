@@ -1,240 +1,455 @@
-console.log('order.js loaded');
+console.log('order.js loaded at ' + new Date().toISOString());
 
 // Rate constants
-let LIVE_RATE = 18.5;
-const DIVISORS = { Cash: 0.98, Bank: 0.945, Mobile: 0.95 };
+const CURRENCIES = ['ZAR', 'EUR', 'GBP'];
 const RATE_REFRESH_INTERVAL = 5 * 60 * 1000;
 let lastRateFetch = 0;
+const FALLBACK_RATES = { ZAR: 17.8, EUR: 0.92, GBP: 0.78 };
+const REMITTANCE_FEE = 0.02;
+const FX_MARGIN = 0.00;
 
-// Form configurations
-const forms = [
-  { formId: 'formCash', usdInputId: 'usdCash', rateId: 'rateCash', effId: 'effCash', zarId: 'zarCash', method: 'Cash',
-    beneficiaryNameId: 'beneficiaryFullNameCash', beneficiaryMobileId: 'beneficiaryMobileCash', beneficiaryIdId: 'beneficiaryGovtIdCash',
-    senderNameId: 'senderFullNameCash', senderEmailId: 'senderEmailCash', senderMobileId: 'senderMobileCash', extraId: 'payoutLocationCash' },
-  { formId: 'formBank', usdInputId: 'usdBank', rateId: 'rateBank', effId: 'effBank', zarId: 'zarBank', method: 'Bank',
-    beneficiaryNameId: 'accountHolderName', beneficiaryMobileId: null, beneficiaryIdId: null,
-    senderNameId: 'senderFullNameBank', senderEmailId: 'senderEmailBank', senderMobileId: 'senderMobileBank',
-    extraIds: ['bankSelect', 'accountNumber', 'branchCode'] },
-  { formId: 'formMobile', usdInputId: 'usdMobile', rateId: 'rateMobile', effId: 'effMobile', zarId: 'zarMobile', method: 'Mobile',
-    beneficiaryNameId: 'beneficiaryNameMobile', beneficiaryMobileId: 'beneficiaryMobileMobile', beneficiaryIdId: 'beneficiaryGovtIdMobile',
-    senderNameId: 'senderFullNameMobile', senderEmailId: 'senderEmailMobile', senderMobileId: 'senderMobileMobile', extraId: 'walletMobile' }
-];
-
-// Debounce utility
-const debounce = (func, wait) => {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-};
-
-// Format currency values
-const formatCurrency = (value, currency) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(value);
-};
-
-// Update cost information with formatted currency
-const updateCost = (usdInput, rateSpan, effSpan, zarSpan, effectiveRate, isLoading = false) => {
-  if (isLoading) {
-    rateSpan.textContent = 'Loading...';
-    effSpan.textContent = 'Loading...';
-    zarSpan.textContent = 'Loading...';
-    return;
+// Generate 8-digit alphanumeric order reference
+const generateOrderReference = () => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters[randomIndex];
   }
-  const usd = parseFloat(usdInput.value) || 0;
-  const zar = Math.ceil((usd * effectiveRate) / 10) * 10;
-  rateSpan.textContent = LIVE_RATE.toFixed(4);
-  effSpan.textContent = effectiveRate.toFixed(4);
-  zarSpan.textContent = formatCurrency(zar, 'ZAR');
+  console.log('Generated order reference:', result);
+  return result;
 };
 
-// Fetch live rate
-const fetchRate = async () => {
+// Fetch exchange rates
+const fetchRates = async () => {
   const now = Date.now();
   if (now - lastRateFetch < RATE_REFRESH_INTERVAL) {
-    console.log('Using cached rate:', LIVE_RATE);
-    return LIVE_RATE;
+    console.log('Using cached rates');
+    return;
   }
-  const rateDisplay = document.getElementById('rateDisplay');
-  if (rateDisplay) {
-    rateDisplay.classList.add('loading');
-    rateDisplay.innerHTML = 'Fetching rate... <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-  }
-  forms.forEach(({ usdInputId, rateId, effId, zarId }) => {
-    const usdInput = document.getElementById(usdInputId);
-    const rateSpan = document.getElementById(rateId);
-    const effSpan = document.getElementById(effId);
-    const zarSpan = document.getElementById(zarId);
-    if (usdInput && rateSpan && effSpan && zarSpan) {
-      updateCost(usdInput, rateSpan, effSpan, zarSpan, 0, true);
-    }
-  });
   try {
     const response = await fetch('https://open.er-api.com/v6/latest/USD');
     if (!response.ok) throw new Error('API request failed');
     const data = await response.json();
-    LIVE_RATE = parseFloat(data.rates.ZAR) || LIVE_RATE;
+    CURRENCIES.forEach(currency => {
+      const rate = data.rates[currency] || FALLBACK_RATES[currency];
+      localStorage.setItem(`rate${currency}`, rate.toFixed(4));
+    });
     lastRateFetch = now;
-    console.log(`Live rate fetched: ${LIVE_RATE}`);
   } catch (error) {
-    console.warn(`Failed to fetch live rate, using fallback: ${LIVE_RATE}`, error);
-    if (rateDisplay) {
-      rateDisplay.innerHTML = `Failed to fetch rate. Using fallback: ${LIVE_RATE.toFixed(4)} ZAR <button onclick="fetchRate()" class="btn btn-sm btn-link">Retry</button>`;
-    }
-  }
-  updateRateDisplay();
-  return LIVE_RATE;
-};
-
-// Update rate display with timestamp
-const updateRateDisplay = () => {
-  const rateDisplay = document.getElementById('rateDisplay');
-  if (rateDisplay) {
-    const timestamp = new Date(lastRateFetch).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-    rateDisplay.innerHTML = `Current Rate: 1 USD = ${LIVE_RATE.toFixed(4)} ZAR (Last updated: ${timestamp})`;
-  }
-};
-
-// Validate amount
-const validateAmount = (input) => {
-  const value = parseFloat(input.value);
-  if (isNaN(value) || value <= 0 || !Number.isInteger(value) || value % 5 !== 0) {
-    input.classList.add('is-invalid');
-    return false;
-  } else {
-    input.classList.remove('is-invalid');
-    return true;
-  }
-};
-
-// Validate phone number
-const validatePhone = (input, isSender) => {
-  const value = input.value;
-  const pattern = isSender ? /^\+27\d{9}$/ : /^\+263\d{9}$/;
-  if (!pattern.test(value)) {
-    input.classList.add('is-invalid');
-    return false;
-  } else {
-    input.classList.remove('is-invalid');
-    return true;
-  }
-};
-
-// Validate name
-const validateName = (input) => {
-  if (!input.value.trim()) {
-    input.classList.add('is-invalid');
-    return false;
-  } else {
-    input.classList.remove('is-invalid');
-    return true;
+    console.error('Failed to fetch rates:', error);
+    CURRENCIES.forEach(currency => {
+      localStorage.setItem(`rate${currency}`, FALLBACK_RATES[currency].toFixed(4));
+    });
   }
 };
 
 // Validate email
-const validateEmail = (input) => {
-  if (!input.value || !/\S+@\S+\.\S+/.test(input.value)) {
-    input.classList.add('is-invalid');
+const validateEmail = (email) => {
+  if (!email) {
+    console.log('Email is empty or undefined');
     return false;
-  } else {
-    input.classList.remove('is-invalid');
-    return true;
   }
+  const cleanedEmail = email.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValid = emailRegex.test(cleanedEmail);
+  console.log(`Validating email "${cleanedEmail}": ${isValid}`);
+  return isValid;
 };
 
-// Validate extra fields
-const validateExtra = (input) => {
-  if (!input.value.trim()) {
-    input.classList.add('is-invalid');
-    return false;
-  } else {
-    input.classList.remove('is-invalid');
-    return true;
-  }
+// Save order to localStorage
+const saveOrder = (order) => {
+  let orders = JSON.parse(localStorage.getItem('orders')) || [];
+  order.reference = generateOrderReference();
+  orders.push(order);
+  localStorage.setItem('orders', JSON.stringify(orders));
+  console.log('Order saved with reference:', order.reference, order);
+  console.log('All orders:', orders);
 };
 
-// Set up each form
-const setupForm = ({ formId, usdInputId, rateId, effId, zarId, method, beneficiaryNameId, beneficiaryMobileId, beneficiaryIdId, senderNameId, senderEmailId, senderMobileId, extraId, extraIds }) => {
-  const form = document.getElementById(formId);
+// Round to the nearest 10
+const roundToNearest10 = (amount) => {
+  return Math.round(amount / 10) * 10;
+};
+
+// Calculate rates and update form
+const updateRateDisplay = (formType, usdInputId, rateSpanId, effRateSpanId, amountSpanId, initialUsdAmount = 0) => {
   const usdInput = document.getElementById(usdInputId);
-  const rateSpan = document.getElementById(rateId);
-  const effSpan = document.getElementById(effId);
-  const zarSpan = document.getElementById(zarId);
-  const beneficiaryNameInput = beneficiaryNameId ? document.getElementById(beneficiaryNameId) : null;
-  const beneficiaryMobileInput = beneficiaryMobileId ? document.getElementById(beneficiaryMobileId) : null;
-  const beneficiaryIdInput = beneficiaryIdId ? document.getElementById(beneficiaryIdId) : null;
-  const senderNameInput = senderNameId ? document.getElementById(senderNameId) : null;
-  const senderEmailInput = senderEmailId ? document.getElementById(senderEmailId) : null;
-  const senderMobileInput = senderMobileId ? document.getElementById(senderMobileId) : null;
-  const extraInput = extraId ? document.getElementById(extraId) : null;
-  const extraInputs = extraIds ? extraIds.map(id => document.getElementById(id)) : [];
+  const rateSpan = document.getElementById(rateSpanId);
+  const effRateSpan = document.getElementById(effRateSpanId);
+  const amountSpan = document.getElementById(amountSpanId);
 
-  if (!form || !usdInput || !rateSpan || !effSpan || !zarSpan ||
-      (beneficiaryNameId && !beneficiaryNameInput) || (beneficiaryMobileId && !beneficiaryMobileInput) || (beneficiaryIdId && !beneficiaryIdInput) ||
-      (senderNameId && !senderNameInput) || (senderEmailId && !senderEmailInput) || (senderMobileId && !senderMobileInput) ||
-      (extraId && !extraInput) || extraInputs.some(input => !input)) {
-    console.error(`Missing elements for ${formId}`);
+  if (!usdInput || !rateSpan || !effRateSpan || !amountSpan) {
+    console.error(`Elements for ${formType} not found`);
     return;
   }
 
-  const divisor = DIVISORS[method];
-  const effectiveRate = LIVE_RATE / divisor;
+  const userLocation = localStorage.getItem('userLocation');
+  let targetCurrency, liveRate, feePercentage;
 
-  console.log(`Setting up ${formId} with divisor ${divisor}, live rate ${LIVE_RATE}, effective rate ${effectiveRate}`);
+  if (userLocation === 'ZA') targetCurrency = 'ZAR';
+  else if (userLocation === 'EU') targetCurrency = 'EUR';
+  else if (userLocation === 'UK') targetCurrency = 'GBP';
+  else {
+    console.error('Invalid userLocation:', userLocation);
+    return;
+  }
 
-  // Real-time updates and validation
-  usdInput.addEventListener('input', debounce(() => {
-    validateAmount(usdInput);
-    updateCost(usdInput, rateSpan, effSpan, zarSpan, effectiveRate);
-  }, 300));
-  if (beneficiaryNameInput) beneficiaryNameInput.addEventListener('input', () => validateName(beneficiaryNameInput));
-  if (beneficiaryMobileInput) beneficiaryMobileInput.addEventListener('input', () => validatePhone(beneficiaryMobileInput, false));
-  if (beneficiaryIdInput) beneficiaryIdInput.addEventListener('input', () => validateExtra(beneficiaryIdInput));
-  if (senderNameInput) senderNameInput.addEventListener('input', () => validateName(senderNameInput));
-  if (senderEmailInput) senderEmailInput.addEventListener('input', () => validateEmail(senderEmailInput));
-  if (senderMobileInput) senderMobileInput.addEventListener('input', () => validatePhone(senderMobileInput, true));
-  if (extraInput) extraInput.addEventListener('input', () => validateExtra(extraInput));
-  extraInputs.forEach(input => input.addEventListener('input', () => validateExtra(input)));
+  liveRate = parseFloat(localStorage.getItem(`rate${targetCurrency}`)) || FALLBACK_RATES[targetCurrency];
+  feePercentage = REMITTANCE_FEE;
+  const effectiveRate = liveRate * (1 + feePercentage);
 
-  // Form submission
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    form.classList.add('was-validated');
-    let isValid = true;
-    isValid = validateAmount(usdInput) && isValid;
-    if (beneficiaryNameInput) isValid = validateName(beneficiaryNameInput) && isValid;
-    if (beneficiaryMobileInput) isValid = validatePhone(beneficiaryMobileInput, false) && isValid;
-    if (beneficiaryIdInput) isValid = validateExtra(beneficiaryIdInput) && isValid;
-    if (senderNameInput) isValid = validateName(senderNameInput) && isValid;
-    if (senderEmailInput) isValid = validateEmail(senderEmailInput) && isValid;
-    if (senderMobileInput) isValid = validatePhone(senderMobileInput, true) && isValid;
-    if (extraInput) isValid = validateExtra(extraInput) && isValid;
-    extraInputs.forEach(input => isValid = validateExtra(input) && isValid);
+  console.log(`Rate calculation for ${formType}: Live Rate = ${liveRate}, Fee = ${feePercentage * 100}%, Effective Rate = ${effectiveRate}`);
+  rateSpan.textContent = liveRate.toFixed(4);
+  effRateSpan.textContent = effectiveRate.toFixed(4);
 
-    if (isValid) {
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData);
-      console.log(`Form ${formId} submitted:`, data);
-      alert(`Order submitted for ${method}!`);
-      form.reset();
-      updateCost(usdInput, rateSpan, effSpan, zarSpan, effectiveRate);
-      form.classList.remove('was-validated');
+  usdInput.addEventListener('input', () => {
+    const usdAmount = parseFloat(usdInput.value) || 0;
+    const convertedAmount = usdAmount * effectiveRate;
+    const roundedAmount = roundToNearest10(convertedAmount);
+    console.log(`Amount calculation for ${formType}: USD = ${usdAmount}, Converted = ${convertedAmount}, Rounded = ${roundedAmount}`);
+    amountSpan.textContent = `${targetCurrency} ${roundedAmount.toFixed(2)}`;
+  });
+
+  usdInput.value = initialUsdAmount;
+  const convertedAmount = initialUsdAmount * effectiveRate;
+  const roundedAmount = roundToNearest10(convertedAmount);
+  console.log(`Initial amount calculation for ${formType}: USD = ${initialUsdAmount}, Converted = ${convertedAmount}, Rounded = ${roundedAmount}`);
+  amountSpan.textContent = `${targetCurrency} ${roundedAmount.toFixed(2)}`;
+
+  return { targetCurrency, effectiveRate };
+};
+
+// Show/hide forms based on payment method
+const togglePaymentForms = (selectedMethod) => {
+  console.log(`Toggling payment forms for method: ${selectedMethod}`);
+  const forms = {
+    'Cash-ZW': document.getElementById('formCash-ZW'),
+    'Bank-ZW': document.getElementById('formBank-ZW'),
+    'Mobile-ZW': document.getElementById('formMobile-ZW')
+  };
+
+  let hasForms = false;
+  Object.keys(forms).forEach(key => {
+    const formElement = forms[key];
+    if (!formElement) {
+      console.error(`Form element ${key} not found in DOM`);
+      return;
+    }
+    hasForms = true;
+    if (key === `${selectedMethod}-ZW`) {
+      formElement.classList.remove('hidden-form');
+    } else {
+      formElement.classList.add('hidden-form');
     }
   });
 
-  // Initialize cost display
-  updateCost(usdInput, rateSpan, effSpan, zarSpan, effectiveRate);
+  if (!hasForms) {
+    console.error('No payment forms found in DOM. Please check order.html.');
+  }
 };
 
-// Initialize forms after fetching rate
+// Pre-fill form with order details
+const prefillForm = (order) => {
+  const method = order.method;
+  const paymentMethodSelect = document.getElementById('paymentMethod');
+  if (!paymentMethodSelect) {
+    console.error('Payment method select element not found');
+    return;
+  }
+  paymentMethodSelect.value = method;
+
+  togglePaymentForms(method);
+
+  const formKey = `${method}-ZW`;
+  const usdInput = document.getElementById(`usd${formKey}`);
+  if (usdInput) {
+    updateRateDisplay(formKey, `usd${formKey}`, `rate${formKey}`, `eff${formKey}`, `zar${formKey}`, parseFloat(order.usdAmount));
+  } else {
+    console.error(`USD input for ${formKey} not found`);
+  }
+
+  if (formKey === 'Cash-ZW') {
+    document.getElementById('beneficiaryFullNameCash-ZW').value = order.beneficiary.fullName;
+    document.getElementById('beneficiaryMobileCash-ZW').value = order.beneficiary.mobile;
+    document.getElementById('beneficiaryGovtIdCash-ZW').value = order.beneficiary.govtId;
+    document.getElementById('payoutLocationCash-ZW').value = order.beneficiary.payoutLocation;
+  } else if (formKey.includes('Bank')) {
+    document.getElementById(`accountHolderName${formKey}`).value = order.beneficiary.fullName;
+    document.getElementById(`bankSelect${formKey}`).value = order.beneficiary.bank;
+    document.getElementById(`accountNumber${formKey}`).value = order.beneficiary.accountNumber;
+    document.getElementById(`branchCode${formKey}`).value = order.beneficiary.branchCode;
+  } else if (formKey.includes('Mobile')) {
+    document.getElementById(`beneficiaryNameMobile${formKey}`).value = order.beneficiary.fullName;
+    document.getElementById(`beneficiaryMobileMobile${formKey}`).value = order.beneficiary.mobile;
+    document.getElementById(`beneficiaryGovtIdMobile${formKey}`).value = order.beneficiary.govtId;
+    document.getElementById(`walletMobile${formKey}`).value = order.beneficiary.wallet;
+  }
+};
+
+// Handle form submission
+const handleFormSubmission = (formId, formType) => {
+  const form = document.getElementById(formId);
+  if (!form) {
+    console.error(`Form ${formId} not found`);
+    return;
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    console.log(`Form ${formId} submitted`);
+
+    const paymentMethodSelect = document.getElementById('paymentMethod');
+    if (!paymentMethodSelect) {
+      console.error('Payment method select element not found');
+      return;
+    }
+    if (!paymentMethodSelect.value) {
+      console.log('Validation failed: Payment method not selected');
+      paymentMethodSelect.classList.add('is-invalid');
+      return;
+    }
+    paymentMethodSelect.classList.remove('is-invalid');
+    console.log('Payment method selected:', paymentMethodSelect.value);
+
+    let isValid = true;
+    const usdInput = form.querySelector(`#usd${formType}`);
+    if (!usdInput) {
+      console.error(`USD input for ${formType} not found`);
+      return;
+    }
+    const usdAmount = parseFloat(usdInput.value) || 0;
+    if (usdAmount <= 0 || usdAmount % 5 !== 0) {
+      console.log(`Validation failed: Invalid USD amount ${usdAmount}`);
+      usdInput.classList.add('is-invalid');
+      isValid = false;
+    } else {
+      usdInput.classList.remove('is-invalid');
+      console.log('USD amount valid:', usdAmount);
+    }
+
+    const fullNameFields = [];
+    if (formType === 'Cash-ZW') fullNameFields.push('beneficiaryFullNameCash-ZW');
+    if (formType.includes('Bank')) fullNameFields.push(`accountHolderName${formType}`);
+    if (formType.includes('Mobile')) fullNameFields.push(`beneficiaryNameMobile${formType}`);
+    fullNameFields.forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      if (!field) {
+        console.error(`Field ${fieldId} not found`);
+        isValid = false;
+        return;
+      }
+      if (!field.value.trim()) {
+        console.log(`Validation failed: ${fieldId} is empty`);
+        field.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        field.classList.remove('is-invalid');
+        console.log(`${fieldId} valid: ${field.value}`);
+      }
+    });
+
+    if (!formType.includes('Bank')) {
+      const beneficiaryMobile = document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryMobileCash-ZW' : `beneficiaryMobileMobile${formType}`);
+      if (!beneficiaryMobile) {
+        console.error(`Beneficiary mobile for ${formType} not found`);
+        isValid = false;
+        return;
+      }
+      if (!beneficiaryMobile.value.trim()) {
+        console.log('Validation failed: Beneficiary mobile is empty');
+        beneficiaryMobile.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        beneficiaryMobile.classList.remove('is-invalid');
+        console.log('Beneficiary mobile valid:', beneficiaryMobile.value);
+      }
+
+      const govtId = document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryGovtIdCash-ZW' : `beneficiaryGovtIdMobile${formType}`);
+      if (!govtId) {
+        console.error(`Government ID for ${formType} not found`);
+        isValid = false;
+        return;
+      }
+      if (!govtId.value.trim()) {
+        console.log('Validation failed: Government ID is empty');
+        govtId.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        govtId.classList.remove('is-invalid');
+        console.log('Government ID valid:', govtId.value);
+      }
+    }
+
+    const selectFields = [];
+    if (formType === 'Cash-ZW') selectFields.push('payoutLocationCash-ZW');
+    if (formType.includes('Bank')) selectFields.push(`bankSelect${formType}`);
+    if (formType.includes('Mobile')) selectFields.push(`walletMobile${formType}`);
+    selectFields.forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      if (!field) {
+        console.error(`Select field ${fieldId} not found`);
+        isValid = false;
+        return;
+      }
+      if (!field.value) {
+        console.log(`Validation failed: ${fieldId} not selected`);
+        field.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        field.classList.remove('is-invalid');
+        console.log(`${fieldId} valid: ${field.value}`);
+      }
+    });
+
+    if (formType.includes('Bank')) {
+      const accountNumber = document.getElementById(`accountNumber${formType}`);
+      const branchCode = document.getElementById(`branchCode${formType}`);
+      if (!accountNumber || !branchCode) {
+        console.error(`Bank fields for ${formType} not found`);
+        isValid = false;
+        return;
+      }
+      if (!accountNumber.value.trim()) {
+        console.log('Validation failed: Account number is empty');
+        accountNumber.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        accountNumber.classList.remove('is-invalid');
+        console.log('Account number valid:', accountNumber.value);
+      }
+      if (!branchCode.value.trim()) {
+        console.log('Validation failed: Branch code is empty');
+        branchCode.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        branchCode.classList.remove('is-invalid');
+        console.log('Branch code valid:', branchCode.value);
+      }
+    }
+
+    const senderDetails = JSON.parse(localStorage.getItem('senderDetails'));
+    const userLocation = localStorage.getItem('userLocation');
+    let validationError = '';
+    if (!senderDetails) {
+      validationError = 'Sender details are missing in localStorage.';
+    } else if (!senderDetails.fullName) {
+      validationError = 'Sender full name is missing.';
+    } else if (!validateEmail(senderDetails.email)) {
+      validationError = 'Sender email is invalid.';
+    }
+
+    if (validationError) {
+      console.error(validationError, senderDetails);
+      alert(validationError + ' Please re-register.');
+      window.location.href = 'auth.html?mode=register&redirect=order.html';
+      return;
+    }
+    console.log('Sender details validated:', senderDetails);
+
+    if (isValid) {
+      console.log('All validations passed, proceeding to save order');
+      const { targetCurrency, effectiveRate } = updateRateDisplay(formType, `usd${formType}`, `rate${formType}`, `eff${formType}`, `zar${formType}`, usdAmount);
+      if (!targetCurrency || !effectiveRate) {
+        console.error('Failed to calculate rates for submission');
+        return;
+      }
+      const convertedAmount = usdAmount * effectiveRate;
+      const roundedAmount = roundToNearest10(convertedAmount);
+
+      const order = {
+        timestamp: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+        method: paymentMethodSelect.value,
+        destination: 'ZW',
+        usdAmount: usdAmount.toFixed(2),
+        convertedAmount: roundedAmount.toFixed(2),
+        currency: targetCurrency,
+        beneficiary: {
+          fullName: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryFullNameCash-ZW' : formType.includes('Bank') ? `accountHolderName${formType}` : `beneficiaryNameMobile${formType}`)?.value || '',
+          mobile: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryMobileCash-ZW' : formType.includes('Mobile') ? `beneficiaryMobileMobile${formType}` : '')?.value || '',
+          govtId: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryGovtIdCash-ZW' : formType.includes('Mobile') ? `beneficiaryGovtIdMobile${formType}` : '')?.value || '',
+          payoutLocation: document.getElementById(formType === 'Cash-ZW' ? 'payoutLocationCash-ZW' : '')?.value || '',
+          bank: document.getElementById(formType.includes('Bank') ? `bankSelect${formType}` : '')?.value || '',
+          accountNumber: document.getElementById(formType.includes('Bank') ? `accountNumber${formType}` : '')?.value || '',
+          branchCode: document.getElementById(formType.includes('Bank') ? `branchCode${formType}` : '')?.value || '',
+          wallet: document.getElementById(formType.includes('Mobile') ? `walletMobile${formType}` : '')?.value || ''
+        },
+        sender: senderDetails
+      };
+
+      saveOrder(order);
+
+      const modal = new bootstrap.Modal(document.getElementById('submissionModal'));
+      if (!modal) {
+        console.error('Submission modal not found');
+        return;
+      }
+      modal.show();
+    } else {
+      console.log('Form validation failed');
+    }
+  });
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
-  await fetchRate();
-  forms.forEach(setupForm);
-  setInterval(fetchRate, RATE_REFRESH_INTERVAL);
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  console.log('Checking isLoggedIn on order.js load:', localStorage.getItem('isLoggedIn'), 'Result:', isLoggedIn);
+  if (!isLoggedIn) {
+    console.log('User not logged in. Redirecting to login.');
+    window.location.href = 'auth.html?mode=login&redirect=order.html';
+    return;
+  }
+
+  const userLocation = localStorage.getItem('userLocation');
+  if (!['ZA', 'EU', 'UK'].includes(userLocation)) {
+    console.error('Invalid user location for order placement:', userLocation);
+    alert('This feature is only available for users in South Africa, Europe, or the United Kingdom.');
+    window.location.href = 'index.html';
+    return;
+  }
+
+  await fetchRates();
+
+  const paymentMethodSelect = document.getElementById('paymentMethod');
+  if (!paymentMethodSelect) {
+    console.error('Payment method select element not found');
+    return;
+  }
+  paymentMethodSelect.innerHTML = `
+    <option value="">Select Payment Method</option>
+    <option value="Cash">Cash Pickup</option>
+    <option value="Bank">Bank Transfer</option>
+    <option value="Mobile">Mobile Money</option>
+  `;
+
+  paymentMethodSelect.addEventListener('change', (e) => {
+    togglePaymentForms(e.target.value);
+  });
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId = urlParams.get('orderId');
+  if (orderId !== null) {
+    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+    const order = orders[parseInt(orderId)];
+    if (order) {
+      console.log('Pre-filling form with order:', order);
+      prefillForm(order);
+    } else {
+      console.error('Order not found for ID:', orderId);
+    }
+  } else {
+    if (document.getElementById('usdCash-ZW')) {
+      updateRateDisplay('Cash-ZW', 'usdCash-ZW', 'rateCash-ZW', 'effCash-ZW', 'zarCash-ZW');
+    }
+    if (document.getElementById('usdBank-ZW')) {
+      updateRateDisplay('Bank-ZW', 'usdBank-ZW', 'rateBank-ZW', 'effBank-ZW', 'zarBank-ZW');
+    }
+    if (document.getElementById('usdMobile-ZW')) {
+      updateRateDisplay('Mobile-ZW', 'usdMobile-ZW', 'rateMobile-ZW', 'effMobile-ZW', 'zarMobile-ZW');
+    }
+  }
+
+  handleFormSubmission('formCash-ZW', 'Cash-ZW');
+  handleFormSubmission('formBank-ZW', 'Bank-ZW');
+  handleFormSubmission('formMobile-ZW', 'Mobile-ZW');
 });

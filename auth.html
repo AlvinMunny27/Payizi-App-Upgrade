@@ -3,20 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payizi - Sign In / Register</title>
+  <title>Payizi Online - Auth</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link href="styles.css?v=2.3" rel="stylesheet">
-  <link rel="icon" type="image/png" href="/black_icon_transparent_background.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <a href="index.html" class="logo-link" aria-label="Payizi Home"></a>
-
-  <nav class="navbar navbar-expand-lg shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="index.html">
-        Payizi Online
+      <a class="navbar-brand" href="index.html">
+        <img src="/white_logo_transparent_background.png" alt="Payizi Logo" class="navbar-logo">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -26,56 +21,48 @@
           <li class="nav-item">
             <a class="nav-link" href="index.html">Home</a>
           </li>
-           <li class="nav-item">
-            <a class="nav-link" href="#order.html">Create Order</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#support">Support</a>
-          </li>
-          <li class="nav-item" id="accountDropdown" style="display: block;">
-            <a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-popper="none">
-              <i class="fas fa-user"></i>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="authDropdown">
-              <li><a class="dropdown-item" href="auth.html?mode=login">Login</a></li>
-              <li><a class="dropdown-item" href="auth.html?mode=register">Register</a></li>
-            </ul>
-          </li>
-          <li class="nav-item" id="logoutLink" style="display: none;">
-            <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
-          </li>
         </ul>
       </div>
     </div>
   </nav>
-
-  <div class="form-container">
-    <h2 id="authTitle" class="text-center mb-4">Sign In</h2>
-    <form id="authForm" novalidate class="p-3">
+  <div class="container">
+    <h1 id="authTitle">Login</h1>
+    <p class="text-center" id="welcomeMessage" style="display: none;"></p>
+    <form id="authForm" class="mt-4">
       <div class="mb-3">
         <label for="email" class="form-label">Email Address</label>
-        <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
-        <div class="invalid-feedback">Invalid email</div>
+        <input type="email" class="form-control" id="email" required>
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
-        <div class="invalid-feedback">Password required</div>
+        <input type="password" class="form-control" id="password" required>
       </div>
-      <div class="mb-3 register-field d-none">
-        <label for="confirmPassword" class="form-label">Confirm Password</label>
-        <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password">
-        <div class="invalid-feedback">Passwords do not match</div>
+      <div id="locationField" class="mb-3" style="display: none;">
+        <label for="location" class="form-label">Transacting Location</label>
+        <select class="form-control" id="location">
+          <option value="">Select Location</option>
+          <option value="ZA">South Africa</option>
+          <option value="EU">Europe</option>
+          <option value="UK">United Kingdom</option>
+        </select>
+      </div>
+      <div id="senderDetailsField" style="display: none;">
+        <div class="mb-3">
+          <label for="senderFullName" class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="senderFullName">
+        </div>
+        <div class="mb-3">
+          <label for="senderMobile" class="form-label">Mobile Number</label>
+          <input type="text" class="form-control" id="senderMobile" placeholder="Select location first">
+        </div>
       </div>
       <button type="submit" class="btn btn-primary w-100">Submit</button>
     </form>
     <p class="text-center mt-3">
-      <a href="#" id="toggleAuthMode" class="text-decoration-none">Don't have an account? Register</a>
+      <a href="auth.html?mode=register" id="toggleAuthMode">Switch to Register</a>
     </p>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="auth.js" defer></script>
-  <script src="navbar.js" defer></script>
+  <script src="auth.js"></script>
 </body>
 </html>

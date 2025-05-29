@@ -1,21 +1,14 @@
-// navbar.js
-console.log('navbar.js loaded');
-
 document.addEventListener('DOMContentLoaded', () => {
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  const accountDropdown = document.getElementById('accountDropdown');
-  const logoutLink = document.getElementById('logoutLink');
+  console.log('Navbar loaded at ' + new Date().toISOString());
 
-  if (isLoggedIn) {
-    accountDropdown.style.display = 'none';
-    logoutLink.style.display = 'block';
-  } else {
-    accountDropdown.style.display = 'block';
-    logoutLink.style.display = 'none';
+  const logoutLink = document.getElementById('logoutLink');
+  if (logoutLink) {
+    logoutLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('isLoggedIn');
+      // Preserve user, userLocation, and senderDetails to avoid re-registration
+      console.log('User logged out, preserving registration data');
+      window.location.href = 'index.html';
+    });
   }
 });
-
-function logout() {
-  localStorage.removeItem('isLoggedIn');
-  window.location.href = 'auth.html?mode=login';
-}
