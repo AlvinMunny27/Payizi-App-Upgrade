@@ -85,8 +85,7 @@ const updateRateDisplay = (formType, usdInputId, rateSpanId, effRateSpanId, amou
   }
 
   const userLocation = localStorage.getItem('userLocation');
-  let targetCurrency, liveRate, feePercentage;
-
+  let targetCurrency;
   if (userLocation === 'ZA') targetCurrency = 'ZAR';
   else if (userLocation === 'EU') targetCurrency = 'EUR';
   else if (userLocation === 'UK') targetCurrency = 'GBP';
@@ -95,8 +94,8 @@ const updateRateDisplay = (formType, usdInputId, rateSpanId, effRateSpanId, amou
     return;
   }
 
-  liveRate = parseFloat(localStorage.getItem(`rate${targetCurrency}`)) || FALLBACK_RATES[targetCurrency];
-  feePercentage = REMITTANCE_FEE;
+  const liveRate = parseFloat(localStorage.getItem(`rate${targetCurrency}`)) || FALLBACK_RATES[targetCurrency];
+  const feePercentage = REMITTANCE_FEE;
   const effectiveRate = liveRate * (1 + feePercentage);
 
   console.log(`Rate calculation for ${formType}: Live Rate = ${liveRate}, Fee = ${feePercentage * 100}%, Effective Rate = ${effectiveRate}`);
@@ -111,84 +110,203 @@ const updateRateDisplay = (formType, usdInputId, rateSpanId, effRateSpanId, amou
     amountSpan.textContent = `${targetCurrency} ${roundedAmount.toFixed(2)}`;
   });
 
-  usdInput.value = initialUsdAmount;
+  usdInput.value = initialUsdAmount || '';
   const convertedAmount = initialUsdAmount * effectiveRate;
   const roundedAmount = roundToNearest10(convertedAmount);
-  console.log(`Initial amount calculation for ${formType}: USD = ${initialUsdAmount}, Converted = ${convertedAmount}, Rounded = ${roundedAmount}`);
   amountSpan.textContent = `${targetCurrency} ${roundedAmount.toFixed(2)}`;
 
   return { targetCurrency, effectiveRate };
 };
 
-// Show/hide forms based on payment method
-const togglePaymentForms = (selectedMethod) => {
-  console.log(`Toggling payment forms for method: ${selectedMethod}`);
+// Add dynamic helper text
+const addHelperText = () => {
+  const helpTexts = {
+    'amountHelpCash-ZW': 'Enter USD amount, must be a multiple of 5 (minimum $5)',
+    'nameHelpCash-ZW': 'Enter full name of the beneficiary',
+    'mobileHelpCash-ZW': 'Use format: +263 followed by 9 digits (e.g., +263771234567)',
+    'govtIdHelpCash-ZW': 'Use format: XX-XXXXXXX-X-XX (e.g., 12-345678-A-90)',
+    'payoutHelpCash-ZW': 'Select a payout location in Zimbabwe',
+    'amountHelpBank-ZW': 'Enter USD amount, must be a multiple of 5 (minimum $5)',
+    'nameHelpBank-ZW': 'Enter full name of the account holder',
+    'bankHelpBank-ZW': 'Select the recipient’s bank',
+    'accountHelpBank-ZW': 'Enter account number (6 or more digits)',
+    'branchHelpBank-ZW': 'Enter branch code (e.g., 123-456)',
+    'amountHelpMobile-ZW': 'Enter USD amount, must be a multiple of 5 (minimum $5)',
+    'nameHelpMobile-ZW': 'Enter full name of the beneficiary',
+    'mobileHelpMobile-ZW': 'Use format: +263 followed by 9 digits (e.g., +263771234567)',
+    'govtIdHelpMobile-ZW': 'Use format: XX-XXXXXXX-X-XX (e.g., 12-345678-A-90)',
+    'walletHelpMobile-ZW': 'Select a mobile wallet provider',
+    'businessNameHelp-ZW': 'Enter the business name',
+    'invoiceHelp-ZW': 'Use letters, numbers, or dashes (e.g., INV-2025-001)',
+    'bankHelpBusiness-ZW': 'Select the business’s bank',
+    'accountHelpBusiness-ZW': 'Enter account number (6 or more digits)',
+    'branchHelpBusiness-ZW': 'Enter branch code (e.g., 123-456)',
+    'amountHelpBusiness-ZW': 'Enter USD amount (minimum $0.50)',
+    'studentNameHelp-ZW': 'Enter the student’s full name',
+    'studentIdHelp-ZW': 'Enter the ID provided by the school (4+ characters, e.g., STU12345)',
+    'schoolNameHelp-ZW': 'Enter the school’s name',
+    'bankHelpSchool-ZW': 'Select the school’s bank',
+    'accountHelpSchool-ZW': 'Enter account number (6 or more digits)',
+    'branchHelpSchool-ZW': 'Enter branch code (e.g., 123-456)',
+    'amountHelpSchool-ZW': 'Enter USD amount (minimum $0.50)',
+    'billTypeHelp-ZW': 'Select the type of bill to pay',
+    'billAccountHelp-ZW': 'Enter account or meter number (6 or more digits)',
+    'amountHelpBill-ZW': 'Enter USD amount (minimum $0.50)',
+    'airtimeMobileHelp-ZW': 'Use format: +263 followed by 9 digits (e.g., +263771234567)',
+    'networkHelp-ZW': 'Select the network provider',
+    'amountHelpAirtime-ZW': 'Enter USD amount (minimum $0.50)'
+  };
+
+  Object.keys(helpTexts).forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = helpTexts[id];
+      console.log(`Added helper text for ${id}: ${helpTexts[id]}`);
+    } else {
+      console.error(`Helper text element ${id} not found`);
+    }
+  });
+};
+
+// Toggle forms based on payment category and method
+const toggleForms = (selectedCategory, selectedMethod = '') => {
+  console.log(`Toggling forms for category: ${selectedCategory}, method: ${selectedMethod}`);
+  const paymentMethodsDiv = document.getElementById('individualPaymentMethods');
   const forms = {
     'Cash-ZW': document.getElementById('formCash-ZW'),
     'Bank-ZW': document.getElementById('formBank-ZW'),
-    'Mobile-ZW': document.getElementById('formMobile-ZW')
+    'Mobile-ZW': document.getElementById('formMobile-ZW'),
+    'Business-ZW': document.getElementById('formBusiness-ZW'),
+    'School-ZW': document.getElementById('formSchool-ZW'),
+    'Bill-ZW': document.getElementById('formBill-ZW'),
+    'Airtime-ZW': document.getElementById('formAirtime-ZW')
   };
 
-  let hasForms = false;
+  // Normalize category for form key matching
+  const normalizedCategory = selectedCategory ? 
+    selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1).toLowerCase() : '';
+
+  paymentMethodsDiv.classList.toggle('hidden-form', selectedCategory !== 'individual');
   Object.keys(forms).forEach(key => {
     const formElement = forms[key];
     if (!formElement) {
       console.error(`Form element ${key} not found in DOM`);
       return;
     }
-    hasForms = true;
-    if (key === `${selectedMethod}-ZW`) {
+    if (selectedCategory === 'individual' && key === `${selectedMethod}-ZW`) {
+      console.log(`Showing individual form: ${key}`);
+      formElement.classList.remove('hidden-form');
+    } else if (selectedCategory !== 'individual' && key === `${normalizedCategory}-ZW`) {
+      console.log(`Showing category form: ${key}`);
       formElement.classList.remove('hidden-form');
     } else {
       formElement.classList.add('hidden-form');
     }
   });
-
-  if (!hasForms) {
-    console.error('No payment forms found in DOM. Please check order.html.');
-  }
 };
 
-// Pre-fill form with order details
+// Validate fields
+const validateField = (field, fieldId, regex = null, minLength = 1) => {
+  if (!field) {
+    console.error(`Field ${fieldId} not found`);
+    return false;
+  }
+  const value = field.value.trim();
+  if (!value || value.length < minLength || (regex && !regex.test(value))) {
+    field.classList.add('is-invalid');
+    console.log(`Validation failed for ${fieldId}: ${value}`);
+    return false;
+  }
+  field.classList.remove('is-invalid');
+  console.log(`${fieldId} valid: ${value}`);
+  return true;
+};
+
+// Pre-fill form for Pay Again
 const prefillForm = (order) => {
-  const method = order.method;
+  const paymentCategorySelect = document.getElementById('paymentCategory');
   const paymentMethodSelect = document.getElementById('paymentMethod');
-  if (!paymentMethodSelect) {
-    console.error('Payment method select element not found');
+  if (!paymentCategorySelect) {
+    console.error('Payment category select not found');
     return;
   }
-  paymentMethodSelect.value = method;
 
-  togglePaymentForms(method);
+  paymentCategorySelect.value = order.category;
+  toggleForms(order.category, order.method);
 
-  const formKey = `${method}-ZW`;
-  const usdInput = document.getElementById(`usd${formKey}`);
-  if (usdInput) {
-    updateRateDisplay(formKey, `usd${formKey}`, `rate${formKey}`, `eff${formKey}`, `zar${formKey}`, parseFloat(order.usdAmount));
-  } else {
-    console.error(`USD input for ${formKey} not found`);
-  }
-
-  if (formKey === 'Cash-ZW') {
-    document.getElementById('beneficiaryFullNameCash-ZW').value = order.beneficiary.fullName;
-    document.getElementById('beneficiaryMobileCash-ZW').value = order.beneficiary.mobile;
-    document.getElementById('beneficiaryGovtIdCash-ZW').value = order.beneficiary.govtId;
-    document.getElementById('payoutLocationCash-ZW').value = order.beneficiary.payoutLocation;
-  } else if (formKey.includes('Bank')) {
-    document.getElementById(`accountHolderName${formKey}`).value = order.beneficiary.fullName;
-    document.getElementById(`bankSelect${formKey}`).value = order.beneficiary.bank;
-    document.getElementById(`accountNumber${formKey}`).value = order.beneficiary.accountNumber;
-    document.getElementById(`branchCode${formKey}`).value = order.beneficiary.branchCode;
-  } else if (formKey.includes('Mobile')) {
-    document.getElementById(`beneficiaryNameMobile${formKey}`).value = order.beneficiary.fullName;
-    document.getElementById(`beneficiaryMobileMobile${formKey}`).value = order.beneficiary.mobile;
-    document.getElementById(`beneficiaryGovtIdMobile${formKey}`).value = order.beneficiary.govtId;
-    document.getElementById(`walletMobile${formKey}`).value = order.beneficiary.wallet;
+  if (order.category === 'individual') {
+    if (paymentMethodSelect) {
+      paymentMethodSelect.value = order.method || '';
+      toggleForms('individual', order.method);
+    }
+    const formId = `form${order.method}-ZW`;
+    const form = document.getElementById(formId);
+    if (form && order.beneficiary) {
+      if (order.method === 'Cash') {
+        document.getElementById('usdCash-ZW').value = order.usdAmount || '';
+        document.getElementById('beneficiaryFullNameCash-ZW').value = order.beneficiary.fullName || '';
+        document.getElementById('beneficiaryMobileCash-ZW').value = order.beneficiary.mobile || '';
+        document.getElementById('beneficiaryGovtIdCash-ZW').value = order.beneficiary.govtId || '';
+        document.getElementById('payoutLocationCash-ZW').value = order.beneficiary.payoutLocation || '';
+      } else if (order.method === 'Bank') {
+        document.getElementById('usdBank-ZW').value = order.usdAmount || '';
+        document.getElementById('accountHolderNameBank-ZW').value = order.beneficiary.fullName || '';
+        document.getElementById('bankSelectBank-ZW').value = order.beneficiary.bank || '';
+        document.getElementById('accountNumberBank-ZW').value = order.beneficiary.accountNumber || '';
+        document.getElementById('branchCodeBank-ZW').value = order.beneficiary.branchCode || '';
+      } else if (order.method === 'Mobile') {
+        document.getElementById('usdMobile-ZW').value = order.usdAmount || '';
+        document.getElementById('beneficiaryNameMobile-ZW').value = order.beneficiary.fullName || '';
+        document.getElementById('beneficiaryMobileMobile-ZW').value = order.beneficiary.mobile || '';
+        document.getElementById('beneficiaryGovtIdMobile-ZW').value = order.beneficiary.govtId || '';
+        document.getElementById('walletMobile-ZW').value = order.beneficiary.wallet || '';
+      }
+      console.log(`Pre-filled form ${formId} with order data`, order);
+    }
+  } else if (order.category === 'business') {
+    const form = document.getElementById('formBusiness-ZW');
+    if (form && order.beneficiary) {
+      document.getElementById('usdBusiness-ZW').value = order.usdAmount || '';
+      document.getElementById('businessName-ZW').value = order.beneficiary.businessName || '';
+      document.getElementById('invoiceNumber-ZW').value = order.beneficiary.invoiceNumber || '';
+      document.getElementById('businessBank-ZW').value = order.beneficiary.bank || '';
+      document.getElementById('businessAccountNumber-ZW').value = order.beneficiary.accountNumber || '';
+      document.getElementById('businessBranchCode-ZW').value = order.beneficiary.branchCode || '';
+      console.log('Pre-filled formBusiness-ZW with order data', order);
+    }
+  } else if (order.category === 'school') {
+    const form = document.getElementById('formSchool-ZW');
+    if (form && order.beneficiary) {
+      document.getElementById('usdSchool-ZW').value = order.usdAmount || '';
+      document.getElementById('studentName-ZW').value = order.beneficiary.studentName || '';
+      document.getElementById('studentId-ZW').value = order.beneficiary.studentId || '';
+      document.getElementById('schoolName-ZW').value = order.beneficiary.schoolName || '';
+      document.getElementById('schoolBank-ZW').value = order.beneficiary.bank || '';
+      document.getElementById('schoolAccountNumber-ZW').value = order.beneficiary.accountNumber || '';
+      document.getElementById('schoolBranchCode-ZW').value = order.beneficiary.branchCode || '';
+      console.log('Pre-filled formSchool-ZW with order data', order);
+    }
+  } else if (order.category === 'bill') {
+    const form = document.getElementById('formBill-ZW');
+    if (form && order.beneficiary) {
+      document.getElementById('usdBill-ZW').value = order.usdAmount || '';
+      document.getElementById('billType-ZW').value = order.beneficiary.billType || '';
+      document.getElementById('billAccountNumber-ZW').value = order.beneficiary.accountNumber || '';
+      console.log('Pre-filled formBill-ZW with order data', order);
+    }
+  } else if (order.category === 'airtime') {
+    const form = document.getElementById('formAirtime-ZW');
+    if (form && order.beneficiary) {
+      document.getElementById('usdAirtime-ZW').value = order.usdAmount || '';
+      document.getElementById('airtimeMobile-ZW').value = order.beneficiary.mobile || '';
+      document.getElementById('networkProvider-ZW').value = order.beneficiary.networkProvider || '';
+      console.log('Pre-filled formAirtime-ZW with order data', order);
+    }
   }
 };
 
 // Handle form submission
-const handleFormSubmission = (formId, formType) => {
+const handleFormSubmission = (formId, formType, category, validationFields) => {
   const form = document.getElementById(formId);
   if (!form) {
     console.error(`Form ${formId} not found`);
@@ -199,134 +317,55 @@ const handleFormSubmission = (formId, formType) => {
     e.preventDefault();
     console.log(`Form ${formId} submitted`);
 
-    const paymentMethodSelect = document.getElementById('paymentMethod');
-    if (!paymentMethodSelect) {
-      console.error('Payment method select element not found');
-      return;
-    }
-    if (!paymentMethodSelect.value) {
-      console.log('Validation failed: Payment method not selected');
-      paymentMethodSelect.classList.add('is-invalid');
-      return;
-    }
-    paymentMethodSelect.classList.remove('is-invalid');
-    console.log('Payment method selected:', paymentMethodSelect.value);
-
     let isValid = true;
-    const usdInput = form.querySelector(`#usd${formType}`);
-    if (!usdInput) {
-      console.error(`USD input for ${formType} not found`);
+    const paymentCategorySelect = document.getElementById('paymentCategory');
+    if (!paymentCategorySelect || !paymentCategorySelect.value) {
+      console.error('Payment category not selected');
+      paymentCategorySelect.classList.add('is-invalid');
       return;
     }
-    const usdAmount = parseFloat(usdInput.value) || 0;
-    if (usdAmount <= 0 || usdAmount % 5 !== 0) {
-      console.log(`Validation failed: Invalid USD amount ${usdAmount}`);
-      usdInput.classList.add('is-invalid');
-      isValid = false;
+    paymentCategorySelect.classList.remove('is-invalid');
+
+    if (category === 'individual') {
+      const paymentMethodSelect = document.getElementById('paymentMethod');
+      if (!paymentMethodSelect || !paymentMethodSelect.value) {
+        console.error('Payment method not selected');
+        paymentMethodSelect.classList.add('is-invalid');
+        return;
+      }
+      paymentMethodSelect.classList.remove('is-invalid');
+    }
+
+    // Validate amount
+    let usdAmount = 0;
+    const usdInput = document.getElementById(`usd${formType}`);
+    usdAmount = parseFloat(usdInput.value) || 0;
+
+    if (['Cash-ZW', 'Bank-ZW', 'Mobile-ZW'].includes(formType)) {
+      if (usdAmount < 5 || usdAmount % 5 !== 0) {
+        console.log(`Validation failed: Invalid USD amount ${usdAmount} for ${formType} (must be multiple of 5, minimum $5)`);
+        usdInput.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        usdInput.classList.remove('is-invalid');
+      }
     } else {
-      usdInput.classList.remove('is-invalid');
-      console.log('USD amount valid:', usdAmount);
-    }
-
-    const fullNameFields = [];
-    if (formType === 'Cash-ZW') fullNameFields.push('beneficiaryFullNameCash-ZW');
-    if (formType.includes('Bank')) fullNameFields.push(`accountHolderName${formType}`);
-    if (formType.includes('Mobile')) fullNameFields.push(`beneficiaryNameMobile${formType}`);
-    fullNameFields.forEach(fieldId => {
-      const field = document.getElementById(fieldId);
-      if (!field) {
-        console.error(`Field ${fieldId} not found`);
-        isValid = false;
-        return;
-      }
-      if (!field.value.trim()) {
-        console.log(`Validation failed: ${fieldId} is empty`);
-        field.classList.add('is-invalid');
+      if (usdAmount < 0.50) {
+        console.log(`Validation failed: Invalid USD amount ${usdAmount} for ${formType} (minimum $0.50)`);
+        usdInput.classList.add('is-invalid');
         isValid = false;
       } else {
-        field.classList.remove('is-invalid');
-        console.log(`${fieldId} valid: ${field.value}`);
+        usdInput.classList.remove('is-invalid');
+      }
+    }
+
+    // Validate category-specific fields
+    validationFields.forEach(({ id, regex, minLength }) => {
+      const field = document.getElementById(id);
+      if (!validateField(field, id, regex, minLength)) {
+        isValid = false;
       }
     });
-
-    if (!formType.includes('Bank')) {
-      const beneficiaryMobile = document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryMobileCash-ZW' : `beneficiaryMobileMobile${formType}`);
-      if (!beneficiaryMobile) {
-        console.error(`Beneficiary mobile for ${formType} not found`);
-        isValid = false;
-        return;
-      }
-      if (!beneficiaryMobile.value.trim()) {
-        console.log('Validation failed: Beneficiary mobile is empty');
-        beneficiaryMobile.classList.add('is-invalid');
-        isValid = false;
-      } else {
-        beneficiaryMobile.classList.remove('is-invalid');
-        console.log('Beneficiary mobile valid:', beneficiaryMobile.value);
-      }
-
-      const govtId = document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryGovtIdCash-ZW' : `beneficiaryGovtIdMobile${formType}`);
-      if (!govtId) {
-        console.error(`Government ID for ${formType} not found`);
-        isValid = false;
-        return;
-      }
-      if (!govtId.value.trim()) {
-        console.log('Validation failed: Government ID is empty');
-        govtId.classList.add('is-invalid');
-        isValid = false;
-      } else {
-        govtId.classList.remove('is-invalid');
-        console.log('Government ID valid:', govtId.value);
-      }
-    }
-
-    const selectFields = [];
-    if (formType === 'Cash-ZW') selectFields.push('payoutLocationCash-ZW');
-    if (formType.includes('Bank')) selectFields.push(`bankSelect${formType}`);
-    if (formType.includes('Mobile')) selectFields.push(`walletMobile${formType}`);
-    selectFields.forEach(fieldId => {
-      const field = document.getElementById(fieldId);
-      if (!field) {
-        console.error(`Select field ${fieldId} not found`);
-        isValid = false;
-        return;
-      }
-      if (!field.value) {
-        console.log(`Validation failed: ${fieldId} not selected`);
-        field.classList.add('is-invalid');
-        isValid = false;
-      } else {
-        field.classList.remove('is-invalid');
-        console.log(`${fieldId} valid: ${field.value}`);
-      }
-    });
-
-    if (formType.includes('Bank')) {
-      const accountNumber = document.getElementById(`accountNumber${formType}`);
-      const branchCode = document.getElementById(`branchCode${formType}`);
-      if (!accountNumber || !branchCode) {
-        console.error(`Bank fields for ${formType} not found`);
-        isValid = false;
-        return;
-      }
-      if (!accountNumber.value.trim()) {
-        console.log('Validation failed: Account number is empty');
-        accountNumber.classList.add('is-invalid');
-        isValid = false;
-      } else {
-        accountNumber.classList.remove('is-invalid');
-        console.log('Account number valid:', accountNumber.value);
-      }
-      if (!branchCode.value.trim()) {
-        console.log('Validation failed: Branch code is empty');
-        branchCode.classList.add('is-invalid');
-        isValid = false;
-      } else {
-        branchCode.classList.remove('is-invalid');
-        console.log('Branch code valid:', branchCode.value);
-      }
-    }
 
     const senderDetails = JSON.parse(localStorage.getItem('senderDetails'));
     const userLocation = localStorage.getItem('userLocation');
@@ -345,37 +384,88 @@ const handleFormSubmission = (formId, formType) => {
       window.location.href = 'auth.html?mode=register&redirect=order.html';
       return;
     }
-    console.log('Sender details validated:', senderDetails);
 
     if (isValid) {
       console.log('All validations passed, proceeding to save order');
-      const { targetCurrency, effectiveRate } = updateRateDisplay(formType, `usd${formType}`, `rate${formType}`, `eff${formType}`, `zar${formType}`, usdAmount);
+      let order = {
+        timestamp: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+        category,
+        destination: 'ZW',
+        usdAmount: usdAmount.toFixed(2),
+        sender: senderDetails
+      };
+
+      // Set method based on category
+      if (category === 'individual') {
+        order.method = document.getElementById('paymentMethod').value;
+      } else if (category === 'business') {
+        order.method = 'Bank Transfer';
+      } else if (category === 'school') {
+        order.method = 'Bank Transfer';
+      } else if (category === 'bill') {
+        order.method = 'Bill Payment';
+      } else if (category === 'airtime') {
+        order.method = 'Airtime Purchase';
+      }
+
+      // Apply rate calculations for all categories
+      const rateFormType = formType === 'Airtime-ZW' ? 'Air-ZW' : formType; // Adjust for Airtime ID
+      const { targetCurrency, effectiveRate } = updateRateDisplay(
+        rateFormType,
+        `usd${formType}`,
+        `rate${rateFormType}`,
+        `eff${rateFormType}`,
+        `zar${rateFormType}`,
+        usdAmount
+      );
       if (!targetCurrency || !effectiveRate) {
         console.error('Failed to calculate rates for submission');
         return;
       }
       const convertedAmount = usdAmount * effectiveRate;
       const roundedAmount = roundToNearest10(convertedAmount);
+      order.convertedAmount = roundedAmount.toFixed(2);
+      order.currency = targetCurrency;
 
-      const order = {
-        timestamp: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-        method: paymentMethodSelect.value,
-        destination: 'ZW',
-        usdAmount: usdAmount.toFixed(2),
-        convertedAmount: roundedAmount.toFixed(2),
-        currency: targetCurrency,
-        beneficiary: {
-          fullName: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryFullNameCash-ZW' : formType.includes('Bank') ? `accountHolderName${formType}` : `beneficiaryNameMobile${formType}`)?.value || '',
-          mobile: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryMobileCash-ZW' : formType.includes('Mobile') ? `beneficiaryMobileMobile${formType}` : '')?.value || '',
-          govtId: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryGovtIdCash-ZW' : formType.includes('Mobile') ? `beneficiaryGovtIdMobile${formType}` : '')?.value || '',
+      if (category === 'individual') {
+        order.beneficiary = {
+          fullName: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryFullNameCash-ZW' : formType === 'Bank-ZW' ? 'accountHolderNameBank-ZW' : 'beneficiaryNameMobile-ZW')?.value || '',
+          mobile: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryMobileCash-ZW' : formType === 'Mobile-ZW' ? 'beneficiaryMobileMobile-ZW' : '')?.value || '',
+          govtId: document.getElementById(formType === 'Cash-ZW' ? 'beneficiaryGovtIdCash-ZW' : formType === 'Mobile-ZW' ? 'beneficiaryGovtIdMobile-ZW' : '')?.value || '',
           payoutLocation: document.getElementById(formType === 'Cash-ZW' ? 'payoutLocationCash-ZW' : '')?.value || '',
-          bank: document.getElementById(formType.includes('Bank') ? `bankSelect${formType}` : '')?.value || '',
-          accountNumber: document.getElementById(formType.includes('Bank') ? `accountNumber${formType}` : '')?.value || '',
-          branchCode: document.getElementById(formType.includes('Bank') ? `branchCode${formType}` : '')?.value || '',
-          wallet: document.getElementById(formType.includes('Mobile') ? `walletMobile${formType}` : '')?.value || ''
-        },
-        sender: senderDetails
-      };
+          bank: document.getElementById(formType === 'Bank-ZW' ? 'bankSelectBank-ZW' : '')?.value || '',
+          accountNumber: document.getElementById(formType === 'Bank-ZW' ? 'accountNumberBank-ZW' : '')?.value || '',
+          branchCode: document.getElementById(formType === 'Bank-ZW' ? 'branchCodeBank-ZW' : '')?.value || '',
+          wallet: document.getElementById(formType === 'Mobile-ZW' ? 'walletMobile-ZW' : '')?.value || ''
+        };
+      } else if (category === 'business') {
+        order.beneficiary = {
+          businessName: document.getElementById('businessName-ZW')?.value || '',
+          invoiceNumber: document.getElementById('invoiceNumber-ZW')?.value || '',
+          bank: document.getElementById('businessBank-ZW')?.value || '',
+          accountNumber: document.getElementById('businessAccountNumber-ZW')?.value || '',
+          branchCode: document.getElementById('businessBranchCode-ZW')?.value || ''
+        };
+      } else if (category === 'school') {
+        order.beneficiary = {
+          studentName: document.getElementById('studentName-ZW')?.value || '',
+          studentId: document.getElementById('studentId-ZW')?.value || '',
+          schoolName: document.getElementById('schoolName-ZW')?.value || '',
+          bank: document.getElementById('schoolBank-ZW')?.value || '',
+          accountNumber: document.getElementById('schoolAccountNumber-ZW')?.value || '',
+          branchCode: document.getElementById('schoolBranchCode-ZW')?.value || ''
+        };
+      } else if (category === 'bill') {
+        order.beneficiary = {
+          billType: document.getElementById('billType-ZW')?.value || '',
+          accountNumber: document.getElementById('billAccountNumber-ZW')?.value || ''
+        };
+      } else if (category === 'airtime') {
+        order.beneficiary = {
+          mobile: document.getElementById('airtimeMobile-ZW')?.value || '',
+          networkProvider: document.getElementById('networkProvider-ZW')?.value || ''
+        };
+      }
 
       saveOrder(order);
 
@@ -385,6 +475,9 @@ const handleFormSubmission = (formId, formType) => {
         return;
       }
       modal.show();
+      form.reset();
+      paymentCategorySelect.value = '';
+      toggleForms('');
     } else {
       console.log('Form validation failed');
     }
@@ -409,47 +502,96 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   await fetchRates();
+  addHelperText();
 
+  const paymentCategorySelect = document.getElementById('paymentCategory');
   const paymentMethodSelect = document.getElementById('paymentMethod');
-  if (!paymentMethodSelect) {
-    console.error('Payment method select element not found');
+  if (!paymentCategorySelect || !paymentMethodSelect) {
+    console.error('Category or method select element not found');
     return;
   }
-  paymentMethodSelect.innerHTML = `
-    <option value="">Select Payment Method</option>
-    <option value="Cash">Cash Pickup</option>
-    <option value="Bank">Bank Transfer</option>
-    <option value="Mobile">Mobile Money</option>
-  `;
 
-  paymentMethodSelect.addEventListener('change', (e) => {
-    togglePaymentForms(e.target.value);
-  });
-
+  // Handle Pay Again query parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const orderId = urlParams.get('orderId');
-  if (orderId !== null) {
+  const category = urlParams.get('category');
+  const orderRef = urlParams.get('orderRef');
+  if (category && orderRef) {
     const orders = JSON.parse(localStorage.getItem('orders')) || [];
-    const order = orders[parseInt(orderId)];
+    const order = orders.find(o => o.reference === orderRef && o.category === category);
     if (order) {
-      console.log('Pre-filling form with order:', order);
+      console.log('Pre-filling form for Pay Again:', order);
       prefillForm(order);
     } else {
-      console.error('Order not found for ID:', orderId);
-    }
-  } else {
-    if (document.getElementById('usdCash-ZW')) {
-      updateRateDisplay('Cash-ZW', 'usdCash-ZW', 'rateCash-ZW', 'effCash-ZW', 'zarCash-ZW');
-    }
-    if (document.getElementById('usdBank-ZW')) {
-      updateRateDisplay('Bank-ZW', 'usdBank-ZW', 'rateBank-ZW', 'effBank-ZW', 'zarBank-ZW');
-    }
-    if (document.getElementById('usdMobile-ZW')) {
-      updateRateDisplay('Mobile-ZW', 'usdMobile-ZW', 'rateMobile-ZW', 'effMobile-ZW', 'zarMobile-ZW');
+      console.error('Order not found for Pay Again:', { category, orderRef });
     }
   }
 
-  handleFormSubmission('formCash-ZW', 'Cash-ZW');
-  handleFormSubmission('formBank-ZW', 'Bank-ZW');
-  handleFormSubmission('formMobile-ZW', 'Mobile-ZW');
+  paymentCategorySelect.addEventListener('change', (e) => {
+    console.log(`Category changed to: ${e.target.value}`);
+    toggleForms(e.target.value);
+  });
+
+  paymentMethodSelect.addEventListener('change', (e) => {
+    console.log(`Method changed to: ${e.target.value}`);
+    if (paymentCategorySelect.value === 'individual') {
+      toggleForms('individual', e.target.value);
+    }
+  });
+
+  // Initialize rate displays
+  ['Cash-ZW', 'Bank-ZW', 'Mobile-ZW', 'Business-ZW', 'School-ZW', 'Bill-ZW', 'Air-ZW'].forEach(formType => {
+    const inputId = formType === 'Air-ZW' ? 'usdAirtime-ZW' : `usd${formType}`;
+    if (document.getElementById(inputId)) {
+      updateRateDisplay(formType, inputId, `rate${formType}`, `eff${formType}`, `zar${formType}`);
+    }
+  });
+
+  // Form submissions with validations
+  handleFormSubmission('formCash-ZW', 'Cash-ZW', 'individual', [
+    { id: 'beneficiaryFullNameCash-ZW', minLength: 2 },
+    { id: 'beneficiaryMobileCash-ZW', regex: /^\+263\d{9}$/ },
+    { id: 'beneficiaryGovtIdCash-ZW', regex: /^\d{2}-\d{7}[A-Z]\d{2}$/ },
+    { id: 'payoutLocationCash-ZW' }
+  ]);
+
+  handleFormSubmission('formBank-ZW', 'Bank-ZW', 'individual', [
+    { id: 'accountHolderNameBank-ZW', minLength: 2 },
+    { id: 'bankSelectBank-ZW' },
+    { id: 'accountNumberBank-ZW', minLength: 6 },
+    { id: 'branchCodeBank-ZW', minLength: 5 }
+  ]);
+
+  handleFormSubmission('formMobile-ZW', 'Mobile-ZW', 'individual', [
+    { id: 'beneficiaryNameMobile-ZW', minLength: 2 },
+    { id: 'beneficiaryMobileMobile-ZW', regex: /^\+263\d{9}$/ },
+    { id: 'beneficiaryGovtIdMobile-ZW', regex: /^\d{2}-\d{7}[A-Z]\d{2}$/ },
+    { id: 'walletMobile-ZW' }
+  ]);
+
+  handleFormSubmission('formBusiness-ZW', 'Business-ZW', 'business', [
+    { id: 'businessName-ZW', minLength: 2 },
+    { id: 'invoiceNumber-ZW', regex: /^[A-Za-z0-9\-]+$/ },
+    { id: 'businessBank-ZW' },
+    { id: 'businessAccountNumber-ZW', minLength: 6 },
+    { id: 'businessBranchCode-ZW', minLength: 5 }
+  ]);
+
+  handleFormSubmission('formSchool-ZW', 'School-ZW', 'school', [
+    { id: 'studentName-ZW', minLength: 2 },
+    { id: 'studentId-ZW', minLength: 4 },
+    { id: 'schoolName-ZW', minLength: 2 },
+    { id: 'schoolBank-ZW' },
+    { id: 'schoolAccountNumber-ZW', minLength: 6 },
+    { id: 'schoolBranchCode-ZW', minLength: 5 }
+  ]);
+
+  handleFormSubmission('formBill-ZW', 'Bill-ZW', 'bill', [
+    { id: 'billType-ZW' },
+    { id: 'billAccountNumber-ZW', minLength: 6 }
+  ]);
+
+  handleFormSubmission('formAirtime-ZW', 'Airtime-ZW', 'airtime', [
+    { id: 'airtimeMobile-ZW', regex: /^\+263\d{9}$/ },
+    { id: 'networkProvider-ZW' }
+  ]);
 });

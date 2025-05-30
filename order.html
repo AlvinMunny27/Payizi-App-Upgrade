@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Place orders for money transfers, business payments, school fees, bills, and airtime in Zimbabwe with Payizi Online">
   <title>Payizi Online - Place Order</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
@@ -18,58 +19,74 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="index.html">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="order.html">Place Order</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="order-history.html">Order History</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" id="logoutLink">Logout</a>
-          </li>
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+          <li class="nav-item"><a class="nav-link active" href="order.html">Place Order</a></li>
+          <li class="nav-item"><a class="nav-link" href="order-history.html">Order History</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" id="logoutLink">Logout</a></li>
         </ul>
       </div>
     </div>
   </nav>
+
   <div class="container">
     <h1>Place an Order</h1>
-    <div class="order-section">
+    <section class="order-section">
       <div class="mb-3">
-        <label for="paymentMethod" class="form-label">Payment Method</label>
-        <select class="form-control" id="paymentMethod">
-          <!-- Options populated dynamically by order.js -->
+        <label for="paymentCategory" class="form-label">Payment Category</label>
+        <select class="form-control" id="paymentCategory" required aria-label="Select payment category">
+          <option value="">Select Payment Category</option>
+          <option value="individual">Payment to Individuals</option>
+          <option value="business">Payment to Suppliers or Business</option>
+          <option value="school">School Fees Payments</option>
+          <option value="bill">Bill Payments</option>
+          <option value="airtime">Airtime Purchase</option>
         </select>
       </div>
 
-      <form id="formCash-ZW" class="hidden-form">
-        <h3>Cash Pickup</h3>
+      <div id="individualPaymentMethods" class="hidden-form">
         <div class="mb-3">
-          <label for="usdCash-ZW" class="form-label">Amount</label>
-          <input type="number" class="form-control" id="usdCash-ZW" step="5" min="5">
+          <label for="paymentMethod" class="form-label">Payment Method</label>
+          <select class="form-control" id="paymentMethod" required aria-label="Select payment method">
+            <option value="">Select Payment Method</option>
+            <option value="Cash">Cash Pickup</option>
+            <option value="Bank">Bank Transfer</option>
+            <option value="Mobile">Mobile Money</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Individual: Cash Pickup -->
+      <form id="formCash-ZW" class="hidden-form">
+        <h3>Payment to Individuals - Cash Pickup</h3>
+        <div class="mb-3">
+          <label for="usdCash-ZW" class="form-label">Amount (USD)</label>
+          <input type="number" class="form-control" id="usdCash-ZW" step="5" min="5" required aria-describedby="amountHelpCash-ZW">
+          <span id="amountHelpCash-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
-          <label class="form-label">Live Rate: <span id="rateCash-ZW"></span></label><br>
-          <label class="form-label">Effective Rate (incl. fees): <span id="effCash-ZW"></span></label><br>
-          <label class="form-label">Amount to Pay: <span id="zarCash-ZW"></span></label>
+          <p>Live Rate: <span id="rateCash-ZW"></span></p>
+          <p>Effective Rate (incl. fees): <span id="effCash-ZW"></span></p>
+          <p>Amount to Pay: <span id="zarCash-ZW"></span></p>
         </div>
         <div class="mb-3">
           <label for="beneficiaryFullNameCash-ZW" class="form-label">Beneficiary Full Name</label>
-          <input type="text" class="form-control" id="beneficiaryFullNameCash-ZW">
+          <input type="text" class="form-control" id="beneficiaryFullNameCash-ZW" required placeholder="e.g., Sipho Ndlovu">
+          <span id="nameHelpCash-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="beneficiaryMobileCash-ZW" class="form-label">Beneficiary Mobile Number</label>
-          <input type="text" class="form-control" id="beneficiaryMobileCash-ZW" placeholder="+263771234567">
+          <input type="text" class="form-control" id="beneficiaryMobileCash-ZW" required placeholder="e.g., +263771234567" aria-describedby="mobileHelpCash-ZW">
+          <span id="mobileHelpCash-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="beneficiaryGovtIdCash-ZW" class="form-label">Beneficiary Government ID</label>
-          <input type="text" class="form-control" id="beneficiaryGovtIdCash-ZW">
+          <input type="text" class="form-control" id="beneficiaryGovtIdCash-ZW" required placeholder="e.g., 12-345678-A-90" aria-describedby="govtIdHelpCash-ZW">
+          <span id="govtIdHelpCash-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="payoutLocationCash-ZW" class="form-label">Payout Location</label>
-          <select class="form-control" id="payoutLocationCash-ZW">
+          <select class="form-control" id="payoutLocationCash-ZW" required>
             <option value="">Select Payout Location</option>
             <option value="Harare">Harare</option>
             <option value="Zhombe">Zhombe</option>
@@ -78,82 +95,259 @@
             <option value="Mutare">Mutare</option>
             <option value="Gweru">Gweru</option>
             <option value="Masvingo">Masvingo</option>
-            <option value="Kwekwe">Kwekwe</option> 
+            <option value="Kwekwe">Kwekwe</option>
             <option value="Chitungwiza">Chitungwiza</option>
           </select>
+          <span id="payoutHelpCash-ZW" class="form-text text-muted"></span>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
 
+      <!-- Individual: Bank Transfer -->
       <form id="formBank-ZW" class="hidden-form">
-        <h3>Bank Transfer</h3>
+        <h3>Payment to Individuals - Bank Transfer</h3>
         <div class="mb-3">
-          <label for="usdBank-ZW" class="form-label">Amount</label>
-          <input type="number" class="form-control" id="usdBank-ZW" step="5" min="5">
+          <label for="usdBank-ZW" class="form-label">Amount (USD)</label>
+          <input type="number" class="form-control" id="usdBank-ZW" step="5" min="5" required aria-describedby="amountHelpBank-ZW">
+          <span id="amountHelpBank-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
-          <label class="form-label">Live Rate: <span id="rateBank-ZW"></span></label><br>
-          <label class="form-label">Effective Rate (incl. fees): <span id="effBank-ZW"></span></label><br>
-          <label class="form-label">Amount to Pay: <span id="zarBank-ZW"></span></label>
+          <p>Live Rate: <span id="rateBank-ZW"></span></p>
+          <p>Effective Rate (incl. fees): <span id="effBank-ZW"></span></p>
+          <p>Amount to Pay: <span id="zarBank-ZW"></span></p>
         </div>
         <div class="mb-3">
           <label for="accountHolderNameBank-ZW" class="form-label">Account Holder Name</label>
-          <input type="text" class="form-control" id="accountHolderNameBank-ZW">
+          <input type="text" class="form-control" id="accountHolderNameBank-ZW" required placeholder="e.g., Sipho Ndlovu">
+          <span id="nameHelpBank-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="bankSelectBank-ZW" class="form-label">Bank</label>
-          <select class="form-control" id="bankSelectBank-ZW">
+          <select class="form-control" id="bankSelectBank-ZW" required>
             <option value="">Select Bank</option>
-            <option value="CBZ">CBZ Bank</option>
-            <option value="ZB">ZB Bank</option>
-            <option value="Stanbic">Stanbic Bank</option>
-            <option value="FBC">FBC Bank</option>
-            <option value="NMB">NMB Bank</option>
+            <option value="CBZ Bank">CBZ Bank</option>
+            <option value="ZB Bank">ZB Bank</option>
+            <option value="Stanbic Bank">Stanbic Bank</option>
+            <option value="FBC Bank">FBC Bank</option>
+            <option value="NMB Bank">NMB Bank</option>
           </select>
+          <span id="bankHelpBank-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="accountNumberBank-ZW" class="form-label">Account Number</label>
-          <input type="text" class="form-control" id="accountNumberBank-ZW">
+          <input type="text" class="form-control" id="accountNumberBank-ZW" required placeholder="e.g., 1234567890 (6+ digits)">
+          <span id="accountHelpBank-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="branchCodeBank-ZW" class="form-label">Branch Code</label>
-          <input type="text" class="form-control" id="branchCodeBank-ZW">
+          <input type="text" class="form-control" id="branchCodeBank-ZW" required placeholder="e.g., 123-456">
+          <span id="branchHelpBank-ZW" class="form-text text-muted"></span>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
 
+      <!-- Individual: Mobile Money -->
       <form id="formMobile-ZW" class="hidden-form">
-        <h3>Mobile Money</h3>
+        <h3>Payment to Individuals - Mobile Money</h3>
         <div class="mb-3">
-          <label for="usdMobile-ZW" class="form-label">Amount (USD, multiple of 5)</label>
-          <input type="number" class="form-control" id="usdMobile-ZW" step="5" min="5">
+          <label for="usdMobile-ZW" class="form-label">Amount (USD)</label>
+          <input type="number" class="form-control" id="usdMobile-ZW" step="5" min="5" required aria-describedby="amountHelpMobile-ZW">
+          <span id="amountHelpMobile-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
-          <label class="form-label">Live Rate: <span id="rateMobile-ZW"></span></label><br>
-          <label class="form-label">Effective Rate (incl. fees): <span id="effMobile-ZW"></span></label><br>
-          <label class="form-label">Amount to Pay: <span id="zarMobile-ZW"></span></label>
+          <p>Live Rate: <span id="rateMobile-ZW"></span></p>
+          <p>Effective Rate (incl. fees): <span id="effMobile-ZW"></span></p>
+          <p>Amount to Pay: <span id="zarMobile-ZW"></span></p>
         </div>
         <div class="mb-3">
           <label for="beneficiaryNameMobile-ZW" class="form-label">Beneficiary Full Name</label>
-          <input type="text" class="form-control" id="beneficiaryNameMobile-ZW">
+          <input type="text" class="form-control" id="beneficiaryNameMobile-ZW" required placeholder="e.g., Sipho Ndlovu">
+          <span id="nameHelpMobile-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="beneficiaryMobileMobile-ZW" class="form-label">Beneficiary Mobile Number</label>
-          <input type="text" class="form-control" id="beneficiaryMobileMobile-ZW" placeholder="+263771234567">
+          <input type="text" class="form-control" id="beneficiaryMobileMobile-ZW" required placeholder="e.g., +263771234567" aria-describedby="mobileHelpMobile-ZW">
+          <span id="mobileHelpMobile-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="beneficiaryGovtIdMobile-ZW" class="form-label">Beneficiary Government ID</label>
-          <input type="text" class="form-control" id="beneficiaryGovtIdMobile-ZW">
+          <input type="text" class="form-control" id="beneficiaryGovtIdMobile-ZW" required placeholder="e.g., 12-345678-A-90" aria-describedby="govtIdHelpMobile-ZW">
+          <span id="govtIdHelpMobile-ZW" class="form-text text-muted"></span>
         </div>
         <div class="mb-3">
           <label for="walletMobile-ZW" class="form-label">Mobile Wallet Provider</label>
-          <select class="form-control" id="walletMobile-ZW">
+          <select class="form-control" id="walletMobile-ZW" required>
             <option value="">Select Wallet Provider</option>
             <option value="EcoCash">EcoCash</option>
             <option value="OneMoney">OneMoney</option>
             <option value="Telecash">Telecash</option>
-            <option value="Telecash">Innbucks</option>
+            <option value="Innbucks">Innbucks</option>
           </select>
+          <span id="walletHelpMobile-ZW" class="form-text text-muted"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+
+      <!-- Business Payment -->
+      <form id="formBusiness-ZW" class="hidden-form">
+        <h3>Payment to Suppliers or Business</h3>
+        <div class="mb-3">
+          <label for="businessName-ZW" class="form-label">Business Name</label>
+          <input type="text" class="form-control" id="businessName-ZW" required placeholder="e.g., ABC Suppliers Pvt Ltd">
+          <span id="businessNameHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="invoiceNumber-ZW" class="form-label">Invoice Number</label>
+          <input type="text" class="form-control" id="invoiceNumber-ZW" required placeholder="e.g., INV-12345 (letters, numbers, dashes)" aria-describedby="invoiceHelp-ZW">
+          <span id="invoiceHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="businessBank-ZW" class="form-label">Bank</label>
+          <select class="form-control" id="businessBank-ZW" required>
+            <option value="">Select Bank</option>
+            <option value="CBZ Bank">CBZ Bank</option>
+            <option value="ZB Bank">ZB Bank</option>
+            <option value="Stanbic Bank">Stanbic Bank</option>
+            <option value="FBC Bank">FBC Bank</option>
+            <option value="NMB Bank">NMB Bank</option>
+          </select>
+          <span id="bankHelpBusiness-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="businessAccountNumber-ZW" class="form-label">Account Number</label>
+          <input type="text" class="form-control" id="businessAccountNumber-ZW" required placeholder="e.g., 1234567890 (6+ digits)">
+          <span id="accountHelpBusiness-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="businessBranchCode-ZW" class="form-label">Branch Code</label>
+          <input type="text" class="form-control" id="businessBranchCode-ZW" required placeholder="e.g., 123-456">
+          <span id="branchHelpBusiness-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="usdBusiness-ZW" class="form-label">Amount (USD)</label>
+          <input type="number" class="form-control" id="usdBusiness-ZW" step="0.01" min="0.50" required aria-describedby="amountHelpBusiness-ZW">
+          <span id="amountHelpBusiness-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <p>Live Rate: <span id="rateBusiness-ZW"></span></p>
+          <p>Effective Rate (incl. fees): <span id="effBusiness-ZW"></span></p>
+          <p>Amount to Pay: <span id="zarBusiness-ZW"></span></p>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+
+      <!-- School Fees Payment -->
+      <form id="formSchool-ZW" class="hidden-form">
+        <h3>School Fees Payments</h3>
+        <div class="mb-3">
+          <label for="studentName-ZW" class="form-label">Student Name</label>
+          <input type="text" class="form-control" id="studentName-ZW" required placeholder="e.g., Tinashe Moyo">
+          <span id="studentNameHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="studentId-ZW" class="form-label">Student ID</label>
+          <input type="text" class="form-control" id="studentId-ZW" required placeholder="e.g., STU12345 (4+ characters)" aria-describedby="studentIdHelp-ZW">
+          <span id="studentIdHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="schoolName-ZW" class="form-label">School Name</label>
+          <input type="text" class="form-control" id="schoolName-ZW" required placeholder="e.g., Harare High School">
+          <span id="schoolNameHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="schoolBank-ZW" class="form-label">School Bank</label>
+          <select class="form-control" id="schoolBank-ZW" required>
+            <option value="">Select Bank</option>
+            <option value="CBZ Bank">CBZ Bank</option>
+            <option value="ZB Bank">ZB Bank</option>
+            <option value="Stanbic Bank">Stanbic Bank</option>
+            <option value="FBC Bank">FBC Bank</option>
+            <option value="NMB Bank">NMB Bank</option>
+          </select>
+          <span id="bankHelpSchool-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="schoolAccountNumber-ZW" class="form-label">School Account Number</label>
+          <input type="text" class="form-control" id="schoolAccountNumber-ZW" required placeholder="e.g., 9876543210 (6+ digits)">
+          <span id="accountHelpSchool-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="schoolBranchCode-ZW" class="form-label">School Branch Code</label>
+          <input type="text" class="form-control" id="schoolBranchCode-ZW" required placeholder="e.g., 123-456">
+          <span id="branchHelpSchool-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="usdSchool-ZW" class="form-label">Amount (USD)</label>
+          <input type="number" class="form-control" id="usdSchool-ZW" step="0.01" min="0.50" required aria-describedby="amountHelpSchool-ZW">
+          <span id="amountHelpSchool-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <p>Live Rate: <span id="rateSchool-ZW"></span></p>
+          <p>Effective Rate (incl. fees): <span id="effSchool-ZW"></span></p>
+          <p>Amount to Pay: <span id="zarSchool-ZW"></span></p>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+
+      <!-- Bill Payment -->
+      <form id="formBill-ZW" class="hidden-form">
+        <h3>Bill Payments</h3>
+        <div class="mb-3">
+          <label for="billType-ZW" class="form-label">Bill Type</label>
+          <select class="form-control" id="billType-ZW" required>
+            <option value="">Select Bill Type</option>
+            <option value="electricity">Electricity (ZESA)</option>
+            <option value="water">Water</option>
+            <option value="internet">Internet (TelOne/ZOL)</option>
+            <option value="dstv">DSTV</option>
+          </select>
+          <span id="billTypeHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="billAccountNumber-ZW" class="form-label">Account/Meter Number</label>
+          <input type="text" class="form-control" id="billAccountNumber-ZW" required placeholder="e.g., 987654321 (6+ digits)" aria-describedby="billAccountHelp-ZW">
+          <span id="billAccountHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="usdBill-ZW" class="form-label">Amount (USD)</label>
+          <input type="number" class="form-control" id="usdBill-ZW" step="0.01" min="0.50" required aria-describedby="amountHelpBill-ZW">
+          <span id="amountHelpBill-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <p>Live Rate: <span id="rateBill-ZW"></span></p>
+          <p>Effective Rate (incl. fees): <span id="effBill-ZW"></span></p>
+          <p>Amount to Pay: <span id="zarBill-ZW"></span></p>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+
+      <!-- Airtime Purchase -->
+      <form id="formAirtime-ZW" class="hidden-form">
+        <h3>Airtime Purchase</h3>
+        <div class="mb-3">
+          <label for="airtimeMobile-ZW" class="form-label">Mobile Number</label>
+          <input type="text" class="form-control" id="airtimeMobile-ZW" required placeholder="e.g., +263771234567" aria-describedby="airtimeMobileHelp-ZW">
+          <span id="airtimeMobileHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="networkProvider-ZW" class="form-label">Network Provider</label>
+          <select class="form-control" id="networkProvider-ZW" required>
+            <option value="">Select Network Provider</option>
+            <option value="econet">Econet</option>
+            <option value="netone">NetOne</option>
+            <option value="telecel">Telecel</option>
+          </select>
+          <span id="networkHelp-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <label for="usdAirtime-ZW" class="form-label">Amount (USD)</label>
+          <input type="number" class="form-control" id="usdAirtime-ZW" step="0.01" min="0.50" required aria-describedby="amountHelpAirtime-ZW">
+          <span id="amountHelpAirtime-ZW" class="form-text text-muted"></span>
+        </div>
+        <div class="mb-3">
+          <p>Live Rate: <span id="rateAir-ZW"></span></p>
+          <p>Effective Rate (incl. fees): <span id="effAir-ZW"></span></p>
+          <p>Amount to Pay: <span id="zarAir-ZW"></span></p>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
@@ -163,10 +357,10 @@
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="submissionModalLabel">Order Submitted</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              Your order has been successfully submitted!
+              <p>Your order has been successfully submitted!</p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -175,9 +369,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="index.js"></script>
   <script src="navbar.js"></script>
   <script src="order.js"></script>
 </body>
